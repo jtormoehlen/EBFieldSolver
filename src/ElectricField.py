@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 
 
 class PointCharge:
+    epsilon_0 = 8.85E-12
+    consts = 1 / (4 * np.pi * epsilon_0)
+
     def __init__(self, q, r0):
         self.q = q
         self.r0 = r0
@@ -23,11 +26,11 @@ class PointCharge:
 
     def compute_field(self, x, y):
         r = np.hypot(x - self.r0[0], y - self.r0[1])
-        return self.q * (x - self.r0[0]) / r**3, self.q * (y - self.r0[1]) / r**3
+        return self.consts * self.q * (x - self.r0[0]) / r**3, self.consts * self.q * (y - self.r0[1]) / r**3
 
     def compute_potentials(self, x, y):
         r = np.hypot(x - self.r0[0], y - self.r0[1])
-        return self.q / r
+        return self.consts * self.q * (1 / r)
 
 
 # setup charges with loc and q
@@ -35,10 +38,10 @@ charges = []
 
 # dy = np.arange(-4.0, 4.0, 0.05)
 # for i in dy:
-#     charges.append(PointCharge(1.0, [-2.0, i]))
+#     charges.append(PointCharge(10.0, [-1.0, i]))
 #
 # for i in dy:
-#     charges.append(PointCharge(-1.0, [2.0, i]))
+#     charges.append(PointCharge(-10.0, [1.0, i]))
 
 # dipole charge
 # charges.append(PointCharge(1.0, [-1.0, -1.0]))

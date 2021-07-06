@@ -59,7 +59,6 @@ ax.set_aspect('equal')
 levels = np.linspace(np.min(Z), np.max(Z), 10)
 # ax.contour(X, Y, Z, linewidths=1, linestyles='solid',
 #             colors='k', levels=levels)
-# ax.contourf(X, Y, Z, levels=levels, cmap=plt.get_cmap('coolwarm'))
 ax.contourf(X, Y, Z, levels=levels, cmap=plt.get_cmap('coolwarm'))
 ax.arrow(xs[0], ys[0], xs[1], ys[1], head_width=0.2, head_length=0.2, length_includes_head=True)
 

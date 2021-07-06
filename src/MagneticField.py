@@ -10,8 +10,8 @@ ax = fig.gca(projection='3d')
 
 def B(x,y):
     I = 1
-    mu = 1.26E-6
-    mag = (mu / (2 * np.pi)) * (I / np.sqrt(x**2 + y**2))
+    mu_0 = 4 * np.pi * 10E-7
+    mag = (mu_0 / (2 * np.pi)) * (I / np.sqrt(x**2 + y**2))
     Bx = mag * (-np.sin(np.arctan2(y, x)))
     By = mag * (np.cos(np.arctan2(y, x)))
     Bz = z * 0
