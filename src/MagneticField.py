@@ -14,7 +14,7 @@ def B(x,y):
     mag = (mu / (2 * np.pi)) * (I / np.sqrt(x**2 + y**2))
     Bx = mag * (-np.sin(np.arctan2(y, x)))
     By = mag * (np.cos(np.arctan2(y, x)))
-    Bz = z*0
+    Bz = z * 0
     return Bx, By, Bz
 
 
