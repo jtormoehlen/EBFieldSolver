@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ODESolver.iml" filepath="$PROJECT_DIR$/.idea/ODESolver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/E_B_FieldVisualizer.iml" filepath="$PROJECT_DIR$/.idea/E_B_FieldVisualizer.iml" />
     </modules>
   </component>
 </project>
