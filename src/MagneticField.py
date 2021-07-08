@@ -54,13 +54,13 @@ conductors = []
 # conductors.append(Conductor(1.0, [0.0, 0.0]))
 
 # conductor loop
-conductors.append(Conductor(1.0, [0.0, 2.0]))
-conductors.append(Conductor(-1.0, [0.0, -2.0]))
+# conductors.append(Conductor(1.0, [0.0, 2.0]))
+# conductors.append(Conductor(-1.0, [0.0, -2.0]))
 
 # coil
-# for i in np.linspace(-5, 5, 10):
-#     conductors.append(Conductor(-1.0, [i, 2.0]))
-#     conductors.append(Conductor(1.0, [i, -2.0]))
+for i in np.linspace(-5, 5, 10):
+    conductors.append(Conductor(-1.0, [i, 5.0]))
+    conductors.append(Conductor(1.0, [i, -5.0]))
 
 nx, ny = 100, 100
 x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
@@ -74,7 +74,7 @@ ax.set_aspect('equal')
 Bx, By = compute_total_field(x, y, conductors)
 # Bmax = np.hypot(Bx, By)
 # ax.quiver(x, y, z, Bx, By, Bz, color='b', length=1, normalize=True)
-ax.streamplot(x, y, Bx, By, zorder=1, color=np.hypot(x, y), cmap='autumn')
+ax.streamplot(x, y, Bx, By, zorder=1, color=-np.hypot(x, y), cmap='binary')
 total_bodies = compute_bodies(conductors)
 for body in total_bodies:
     ax.add_patch(body)
