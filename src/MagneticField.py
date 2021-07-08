@@ -1,37 +1,85 @@
-from mpl_toolkits.mplot3d import axes3d
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-x, y, z = np.meshgrid(np.linspace(-5, 5, 10), np.linspace(-5, 5, 10), np.linspace(-5, 5, 10))
 
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-
-
-def B(x,y):
-    I = 1
+class Conductor:
     mu_0 = 4 * np.pi * 10E-7
-    mag = (mu_0 / (2 * np.pi)) * (I / np.sqrt(x**2 + y**2))
-    Bx = mag * (-np.sin(np.arctan2(y, x)))
-    By = mag * (np.cos(np.arctan2(y, x)))
-    Bz = z * 0
-    return Bx, By, Bz
+    const = (mu_0 / (2 * np.pi))
+
+    def __init__(self, I, r0):
+        self.I = I
+        self.R = 0.5
+        self.r0 = r0
+
+    def body(self):
+        if self.I == 0:
+            I_color = 'black'
+        elif self.I < 0:
+            I_color = 'blue'
+        else:
+            I_color = 'red'
+
+        return plt.Circle(self.r0, self.R, color=I_color)
+
+    def compute_magnetic_field(self, x, y):
+        mag = self.const * (self.I / np.hypot(x - self.r0[0], y - self.r0[1]))
+        Bx = mag * (-np.sin(np.arctan2(x - self.r0[0], y - self.r0[1])))
+        By = mag * (np.cos(np.arctan2(x - self.r0[0], y - self.r0[1])))
+        return By, Bx
 
 
-def cylinder(r):
-    phi = np.linspace(0, 2 * np.pi, 100)
-    x = r * np.cos(phi)
-    y = r * np.sin(phi)
-    return x, y
+def compute_total_field(x, y, conductors):
+    fields = []
+    for conductor in conductors:
+        field = conductor.compute_magnetic_field(x, y)
+        fields.append(field)
+
+    total_field = np.zeros_like(fields[0])
+    for field in fields:
+        total_field += field
+    return total_field
 
 
-Bx, By, Bz = B(x, y)
-cx, cy = cylinder(0.2)
+def compute_bodies(conductors):
+    conductor_bodies = []
+    for conductor in conductors:
+        conductor_bodies.append(conductor.body())
+    return conductor_bodies
 
-ax.quiver(x, y, z, Bx, By, Bz, color='b', length=1, normalize=True)
 
-for i in np.linspace(-5, 5, 500):
-    ax.plot(cx, cy, i, label='Cylinder', color='r')
+conductors = []
+# single wire
+# conductors.append(Conductor(1.0, [0.0, 0.0]))
 
-plt.xlabel(r'$x$')
-plt.ylabel(r'$y$')
+# conductor loop
+conductors.append(Conductor(1.0, [0.0, 2.0]))
+conductors.append(Conductor(-1.0, [0.0, -2.0]))
+
+# coil
+# for i in np.linspace(-5, 5, 10):
+#     conductors.append(Conductor(-1.0, [i, 2.0]))
+#     conductors.append(Conductor(1.0, [i, -2.0]))
+
+nx, ny = 100, 100
+x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
+
+fig = plt.figure(figsize=(7, 7))
+ax = fig.add_subplot(111)
+ax.set_xlabel(r'$y$')
+ax.set_ylabel(r'$x$')
+ax.set_aspect('equal')
+
+Bx, By = compute_total_field(x, y, conductors)
+# Bmax = np.hypot(Bx, By)
+# ax.quiver(x, y, z, Bx, By, Bz, color='b', length=1, normalize=True)
+ax.streamplot(x, y, Bx, By, zorder=1, color=np.hypot(x, y), cmap='autumn')
+total_bodies = compute_bodies(conductors)
+for body in total_bodies:
+    ax.add_patch(body)
+
+plt.savefig('b_field.png')
+plt.show()
+plt.close(fig)
+sys.exit(0)

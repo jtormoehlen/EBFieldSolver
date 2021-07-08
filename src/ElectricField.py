@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 class PointCharge:
     epsilon_0 = 8.85E-12
-    consts = 1 / (4 * np.pi * epsilon_0)
+    const = 1 / (4 * np.pi * epsilon_0)
 
     def __init__(self, q, r0):
         self.q = q
@@ -26,11 +26,11 @@ class PointCharge:
 
     def compute_field(self, x, y):
         r = np.hypot(x - self.r0[0], y - self.r0[1])
-        return self.consts * self.q * (x - self.r0[0]) / r**3, self.consts * self.q * (y - self.r0[1]) / r**3
+        return self.const * self.q * (x - self.r0[0]) / r ** 3, self.const * self.q * (y - self.r0[1]) / r ** 3
 
     def compute_potentials(self, x, y):
         r = np.hypot(x - self.r0[0], y - self.r0[1])
-        return self.consts * self.q * (1 / r)
+        return self.const * self.q * (1 / r)
 
 
 # setup charges with loc and q
@@ -63,15 +63,10 @@ charges.append(PointCharge(-1.0, [1.0, -1.0]))
 # charges.append(PointCharge(-1.0, [0.0, 0.0]))
 
 
-def get_charges():
-    return charges
-
-
 def compute_total_field(x, y, charges):
-    X, Y = np.meshgrid(x, y)
     fields = []
     for charge in charges:
-        fields.append(charge.compute_field(X, Y))
+        fields.append(charge.compute_field(x, y))
 
     total_field = np.zeros_like(fields[0])
     for field in fields:
@@ -85,10 +80,10 @@ def norm_total_field(x, y, charges):
 
 
 def compute_total_potentials(x, y, charges):
-    X, Y = np.meshgrid(x, y)
+
     potentials = []
     for charge in charges:
-        potentials.append(charge.compute_potentials(X, Y))
+        potentials.append(charge.compute_potentials(x, y))
 
     total_potentials = np.zeros_like(potentials[0])
     for potential in potentials:
@@ -104,35 +99,32 @@ def compute_bodies(charges):
     return charge_bodies
 
 
-def init_plot():
-    # 1D arrays
-    nx, ny = 50, 50
-    x = np.linspace(-5, 5, nx)
-    y = np.linspace(-5, 5, ny)
+nx, ny = 50, 50
+x, y = np.meshgrid(np.linspace(-5, 5, nx), np.linspace(-5, 5, ny))
 
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111)
-    ax.set(xlim=(-5, 5), ylim=(-5, 5))
-    ax.set_xlabel(r'$x$')
-    ax.set_ylabel(r'$y$')
-    ax.set_aspect('equal')
+fig = plt.figure(figsize=(7, 7))
+ax = fig.add_subplot(111)
+ax.set(xlim=(-5, 5), ylim=(-5, 5))
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_aspect('equal')
 
-    field_x, field_y = compute_total_field(x, y, charges)
-    # norm_field = norm_total_field(x, y, charges)
-    # ax.quiver(x, y, field_x / norm_field, field_y / norm_field, color='black', scale=25)
-    ax.streamplot(x, y, field_x, field_y, color='black')
+field_x, field_y = compute_total_field(x, y, charges)
+# norm_field = norm_total_field(x, y, charges)
+# ax.quiver(x, y, field_x / norm_field, field_y / norm_field, color='black', scale=25)
+ax.streamplot(x, y, field_x, field_y, color='black')
 
-    total_potentials = compute_total_potentials(x, y, charges)
-    z = np.linspace(np.min(total_potentials) / 10, np.max(total_potentials) / 10, 10)
-    # ax.contour(x, y, total_potentials, z, colors='k')
-    ax.contourf(x, y, total_potentials, z, cmap=plt.get_cmap('coolwarm'))
-    # ax.clabel(pots, inline=True, fontsize=10)
+total_potentials = compute_total_potentials(x, y, charges)
+z = np.linspace(np.min(total_potentials) / 10, np.max(total_potentials) / 10, 10)
+# ax.contour(x, y, total_potentials, z, colors='k')
+ax.contourf(x, y, total_potentials, z, cmap='coolwarm')
+# ax.clabel(pots, inline=True, fontsize=10)
 
-    total_bodies = compute_bodies(charges)
-    for body in total_bodies:
-        ax.add_patch(body)
+total_bodies = compute_bodies(charges)
+for body in total_bodies:
+    ax.add_patch(body)
 
-    return fig, ax
-
-
-init_plot()
+plt.savefig('e_field.png')
+plt.show()
+plt.close(fig)
+sys.exit(0)
