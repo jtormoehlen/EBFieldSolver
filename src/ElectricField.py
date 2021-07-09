@@ -44,12 +44,13 @@ charges = []
 #     charges.append(PointCharge(-10.0, [1.0, i]))
 
 # dipole charge
-# charges.append(PointCharge(1.0, [-1.0, -1.0]))
-# charges.append(PointCharge(-2.0, [3.0, 3.0]))
+# charges.append(PointCharge(1.0, [0.0, -1.0]))
+# charges.append(PointCharge(-1.0, [0.0, 1.0]))
 
 # triple charge
 # a = 4.0
-# charges.append(PointCharge(1.0, [0.0, 0.0]))
+# charges.append(PointCharge(-1.0, [0.0, 0.0]))
+# charges.append(PointCharge(-1.0, [0.0, 0.0]))
 # charges.append(PointCharge(1.0, [a, 0.0]))
 # charges.append(PointCharge(-1.0, [0.0, a]))
 
@@ -112,7 +113,7 @@ ax.set_aspect('equal')
 Ex, Ey = compute_total_field(x, y, charges)
 # norm_field = norm_total_field(x, y, charges)
 # ax.quiver(x, y, field_x / norm_field, field_y / norm_field, color='black', scale=25)
-ax.streamplot(x, y, Ex, Ey, color=-np.hypot(x, y), cmap='binary')
+ax.streamplot(x, y, Ex, Ey, color='black')
 
 total_potentials = compute_total_potentials(x, y, charges)
 z = np.linspace(np.min(total_potentials) / 10, np.max(total_potentials) / 10, 10)
