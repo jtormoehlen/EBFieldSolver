@@ -105,7 +105,7 @@ x, y = np.meshgrid(np.linspace(-5, 5, nx), np.linspace(-5, 5, ny))
 
 fig = plt.figure(figsize=(7, 7))
 ax = fig.add_subplot(111)
-# ax.set(xlim=(-5, 5), ylim=(-5, 5))
+ax.set(xlim=(-5, 5), ylim=(-5, 5))
 ax.set_xlabel(r'$x$')
 ax.set_ylabel(r'$y$')
 ax.set_aspect('equal')
