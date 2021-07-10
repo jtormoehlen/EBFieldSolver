@@ -27,8 +27,8 @@ class Conductor:
             I_color = 'black'
             size = self.R * 400
 
-        circle_contents = [self.r0[0], self.r0[1], size, I_color, I_direction]
-        return plt.Circle(self.r0, self.R, edgecolor=I_color, facecolor='None'), circle_contents
+        return plt.Circle(self.r0, self.R, edgecolor=I_color, facecolor='white'), \
+            [self.r0[0], self.r0[1], size, I_color, I_direction]
 
 
     def compute_magnetic_field(self, x, y):
@@ -62,13 +62,13 @@ conductors = []
 # conductors.append(Conductor(1.0, [0.0, 0.0]))
 
 # conductor loop
-conductors.append(Conductor(-1.0, [0.0, 2.0]))
-conductors.append(Conductor(1.0, [0.0, -2.0]))
+# conductors.append(Conductor(-1.0, [0.0, 2.0]))
+# conductors.append(Conductor(1.0, [0.0, -2.0]))
 
 # coil
-# for i in np.linspace(-5, 5, 10):
-#     conductors.append(Conductor(-1.0, [i, 3.0]))
-#     conductors.append(Conductor(1.0, [i, -3.0]))
+for i in np.linspace(-5, 5, 10):
+    conductors.append(Conductor(-1.0, [i, 3.0]))
+    conductors.append(Conductor(1.0, [i, -3.0]))
 
 nx, ny = 100, 100
 x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
@@ -82,15 +82,15 @@ ax.set_aspect('equal')
 
 Bx, By = compute_total_field(x, y, conductors)
 # Bmax = np.hypot(Bx, By)
-# ax.quiver(x, y, z, Bx, By, Bz, color='b', length=1, normalize=True)
+# ax.quiver(x, y, Bx, By, zorder=1)
 
 ax.streamplot(x, y, Bx, By, zorder=1, color=np.log(np.hypot(Bx, By)), cmap='cool', density=2)
 total_bodies = compute_bodies(conductors)
 for body in total_bodies:
     ax.add_patch(body[0])
-    ax.scatter(body[1][0], body[1][1], body[1][2], body[1][3], body[1][4])
+    ax.scatter(body[1][0], body[1][1], body[1][2], body[1][3], body[1][4], zorder=2)
 
-plt.savefig('b_field.png')
+plt.savefig('img/b_field.png')
 plt.show()
 plt.close(fig)
 sys.exit(0)

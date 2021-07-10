@@ -95,7 +95,6 @@ def compute_total_potentials(x, y, charges):
 def compute_bodies(charges):
     charge_bodies = []
     for charge in charges:
-        # masking
         charge_bodies.append(charge.body())
     return charge_bodies
 
@@ -125,7 +124,7 @@ total_bodies = compute_bodies(charges)
 for body in total_bodies:
     ax.add_patch(body)
 
-plt.savefig('e_field.png')
+plt.savefig('img/e_field.png')
 plt.show()
 plt.close(fig)
 sys.exit(0)
