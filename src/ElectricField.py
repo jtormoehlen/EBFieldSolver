@@ -99,32 +99,33 @@ def compute_bodies(charges):
     return charge_bodies
 
 
-nx, ny = 100, 100
-x, y = np.meshgrid(np.linspace(-5, 5, nx), np.linspace(-5, 5, ny))
+if __name__ == "__main__":
+    nx, ny = 100, 100
+    x, y = np.meshgrid(np.linspace(-5, 5, nx), np.linspace(-5, 5, ny))
 
-fig = plt.figure(figsize=(7, 7))
-ax = fig.add_subplot(111)
-ax.set(xlim=(-5, 5), ylim=(-5, 5))
-ax.set_xlabel(r'$x$')
-ax.set_ylabel(r'$y$')
-ax.set_aspect('equal')
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(111)
+    ax.set(xlim=(-5, 5), ylim=(-5, 5))
+    ax.set_xlabel(r'$x$')
+    ax.set_ylabel(r'$y$')
+    ax.set_aspect('equal')
 
-Ex, Ey = compute_total_field(x, y, charges)
-# norm_field = norm_total_field(x, y, charges)
-# ax.quiver(x, y, field_x / norm_field, field_y / norm_field, color='black', scale=25)
-ax.streamplot(x, y, Ex, Ey, color='black')
+    Ex, Ey = compute_total_field(x, y, charges)
+    # norm_field = norm_total_field(x, y, charges)
+    # ax.quiver(x, y, field_x / norm_field, field_y / norm_field, color='black', scale=25)
+    ax.streamplot(x, y, Ex, Ey, color='black')
 
-total_potentials = compute_total_potentials(x, y, charges)
-z = np.linspace(np.min(total_potentials) / 10, np.max(total_potentials) / 10, 10)
-# ax.contour(x, y, total_potentials, z, colors='k')
-ax.contourf(x, y, total_potentials, z, cmap='bwr')
-# ax.clabel(pots, inline=True, fontsize=10)
+    total_potentials = compute_total_potentials(x, y, charges)
+    z = np.linspace(np.min(total_potentials) / 10, np.max(total_potentials) / 10, 10)
+    # ax.contour(x, y, total_potentials, z, colors='k')
+    ax.contourf(x, y, total_potentials, z, cmap='bwr')
+    # ax.clabel(pots, inline=True, fontsize=10)
 
-total_bodies = compute_bodies(charges)
-for body in total_bodies:
-    ax.add_patch(body)
+    total_bodies = compute_bodies(charges)
+    for body in total_bodies:
+        ax.add_patch(body)
 
-plt.savefig('img/e_field.png')
-plt.show()
-plt.close(fig)
-sys.exit(0)
+    plt.savefig('img/e_field.png')
+    plt.show()
+    plt.close(fig)
+    sys.exit(0)

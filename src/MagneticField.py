@@ -28,14 +28,27 @@ class Conductor:
             size = self.R * 400
 
         return plt.Circle(self.r0, self.R, edgecolor=I_color, facecolor='white'), \
-            [self.r0[0], self.r0[1], size, I_color, I_direction]
-
+               [self.r0[0], self.r0[1], size, I_color, I_direction]
 
     def compute_magnetic_field(self, x, y):
         mag = self.const * (self.I / np.hypot(x - self.r0[0], y - self.r0[1]))
         Bx = mag * (-np.sin(np.arctan2(x - self.r0[0], y - self.r0[1])))
         By = mag * (np.cos(np.arctan2(x - self.r0[0], y - self.r0[1])))
         return By, Bx
+
+
+conductors = []
+# single wire
+# conductors.append(Conductor(50E-3, [0.0, 0.0]))
+
+# conductor loop
+conductors.append(Conductor(-1.0, [0.0, 3.0]))
+conductors.append(Conductor(1.0, [0.0, -3.0]))
+
+# coil
+# for i in np.linspace(-5, 5, 10):
+#     conductors.append(Conductor(-1.0, [i, 3.0]))
+#     conductors.append(Conductor(1.0, [i, -3.0]))
 
 
 def compute_total_field(x, y, conductors):
@@ -57,40 +70,29 @@ def compute_bodies(conductors):
     return conductor_bodies
 
 
-conductors = []
-# single wire
-# conductors.append(Conductor(1.0, [0.0, 0.0]))
+if __name__ == "__main__":
+    nx, ny = 100, 100
+    x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
 
-# conductor loop
-# conductors.append(Conductor(-1.0, [0.0, 2.0]))
-# conductors.append(Conductor(1.0, [0.0, -2.0]))
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(111)
+    ax.set(xlim=(-10, 10), ylim=(-10, 10))
+    ax.set_xlabel(r'$y$')
+    ax.set_ylabel(r'$x$')
+    ax.set_aspect('equal')
 
-# coil
-for i in np.linspace(-5, 5, 10):
-    conductors.append(Conductor(-1.0, [i, 3.0]))
-    conductors.append(Conductor(1.0, [i, -3.0]))
+    Bx, By = compute_total_field(x, y, conductors)
+    # Bmax = np.hypot(Bx, By)
+    # ax.quiver(x, y, Bx, By, zorder=1)
 
-nx, ny = 100, 100
-x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
+    B = ax.streamplot(x, y, Bx, By, zorder=1, color=np.log(np.hypot(Bx, By)), cmap='cool', density=2)
+    # fig.colorbar(B.lines, ax=ax)
+    total_bodies = compute_bodies(conductors)
+    for body in total_bodies:
+        ax.add_patch(body[0])
+        ax.scatter(body[1][0], body[1][1], body[1][2], body[1][3], body[1][4], zorder=2)
 
-fig = plt.figure(figsize=(7, 7))
-ax = fig.add_subplot(111)
-ax.set(xlim=(-10, 10), ylim=(-10, 10))
-ax.set_xlabel(r'$y$')
-ax.set_ylabel(r'$x$')
-ax.set_aspect('equal')
-
-Bx, By = compute_total_field(x, y, conductors)
-# Bmax = np.hypot(Bx, By)
-# ax.quiver(x, y, Bx, By, zorder=1)
-
-ax.streamplot(x, y, Bx, By, zorder=1, color=np.log(np.hypot(Bx, By)), cmap='cool', density=2)
-total_bodies = compute_bodies(conductors)
-for body in total_bodies:
-    ax.add_patch(body[0])
-    ax.scatter(body[1][0], body[1][1], body[1][2], body[1][3], body[1][4], zorder=2)
-
-plt.savefig('img/b_field.png')
-plt.show()
-plt.close(fig)
-sys.exit(0)
+    plt.savefig('img/b_field.png')
+    plt.show()
+    plt.close(fig)
+    sys.exit(0)
