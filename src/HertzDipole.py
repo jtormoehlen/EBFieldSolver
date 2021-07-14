@@ -33,7 +33,7 @@ def dipole_e_vec(x, y, z, p, t):
     c5 = 1j / c2 ** 2
     c6 = 1j * (c2 - (_omega * t))
 
-    E = c1 * ((rcrossp_cross_r * c3) + r_dot_rdotp * (c4 - c5)) * np.exp(c6)
+    E = c1 * ((rcrossp_cross_r * c3) + (r_dot_rdotp * (c4 - c5))) * np.exp(c6)
     return E
 
 
@@ -97,18 +97,23 @@ if __name__ == "__main__":
                 Sx[i][j] = np.real(S[0])
                 Sz[i][j] = np.real(S[2])
 
-        plt.rcParams['image.cmap'] = 'bwr'
+        plt.rcParams['image.cmap'] = 'cool'
         B_norm = np.hypot(Bx, By)
-        plt.quiver(X2, Y, Bx, By)
+        plt.quiver(X2 / _wavelength, Y / _wavelength, Bx, By, 1 / (2.0 + np.hypot(X2, Y)))
         # S_norm = np.hypot(Sx, Sz)
-        # plt.quiver(X1, Z, Sx, Sz)
+        # plt.quiver(X1, Z, Sx / S_norm, Sz / S_norm)
+        # plt.rcParams['image.cmap'] = 'winter'
         # E_norm = np.hypot(Ex, Ez)
-        # plt.quiver(X1, Z, Ex / E_norm, Ez / E_norm)
+        # plt.quiver(X1, Z, Ex / E_norm, Ez / E_norm, Ez / E_norm)
+        # plt.contour(X1, Z, E_norm, levels=np.linspace(2, 10, 4))
+
         # plt.pcolormesh(X1, Z, E_norm, cmap='hot')
         plt.xlabel(r'$x/\lambda$')
         plt.ylabel(r'$y/\lambda$')
+        plt.gca().set_aspect('equal')
         plt.savefig('img/dipole/dipole' + str(counter) + '.png')
         plt.cla()
+        print('Frame#' + str(counter))
         counter = counter + 1
 
     with iio.get_writer('img/dipole.gif', mode='I') as writer:
