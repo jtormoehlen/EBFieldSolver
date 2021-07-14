@@ -23,8 +23,8 @@ def dipole_e_vec(x, y, z, p, t):
     r_norm = np.linalg.norm(r)
     r_cross_p = np.cross(r, p)
     rcrossp_cross_r = np.cross(r_cross_p, r)
-    r_dot_p = np.dot(3 * r, p)
-    r_dot_rdotp = np.dot(r, r_dot_p) - p
+    r_dot_p = np.dot(r, p)
+    r_dot_rdotp = (3 * r * r_dot_p) - p
 
     c1 = (_omega ** 3 / (4 * np.pi * _epsilon0 * _c ** 3))
     c2 = (_omega * r_norm) / _c
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         # S_norm = np.hypot(Sx, Sz)
         # plt.quiver(X1, Z, Sx, Sz)
         # E_norm = np.hypot(Ex, Ez)
-        # plt.quiver(X1, Z, Ex / E_norm, Ez / E_norm, Ez / E_norm)
+        # plt.quiver(X1, Z, Ex / E_norm, Ez / E_norm)
         # plt.pcolormesh(X1, Z, E_norm, cmap='hot')
         plt.xlabel(r'$x/\lambda$')
         plt.ylabel(r'$y/\lambda$')
