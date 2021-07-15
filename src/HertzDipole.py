@@ -1,8 +1,7 @@
 import sys
 
 import numpy as np
-from matplotlib import pyplot as plt
-import imageio as iio
+import FieldUtil as util
 
 "++++++++++++++++++++++Constants++++++++++++++++++++++"
 _c = 299792458.
@@ -18,7 +17,7 @@ _p_norm = np.sqrt(12 * _pi * _c * _power / (_mu0 * _omega ** 4))
 _p_0 = np.array([0.0, 0.0, _p_norm])
 
 
-def dipole_e_vec(x, y, z, p, t):
+def dipole_E(x, y, z, p, t):
     r = np.array([x, y, z])
     r_norm = np.linalg.norm(r)
     r_cross_p = np.cross(r, p)
@@ -37,7 +36,7 @@ def dipole_e_vec(x, y, z, p, t):
     return E
 
 
-def dipole_b_vec(x, y, z, p, t):
+def dipole_H(x, y, z, p, t):
     r = np.array([x, y, z])
     r_norm = np.linalg.norm(r)
     r_cross_p = np.cross(r, p)
@@ -48,12 +47,12 @@ def dipole_b_vec(x, y, z, p, t):
     c4 = 1j / c2 ** 2
     c5 = 1j * (c2 - (_omega * t))
 
-    B = c1 * r_cross_p * (c3 + c4) * np.exp(c5)
-    return B
+    H = c1 * r_cross_p * (c3 + c4) * np.exp(c5)
+    return H
 
 
-def dipole_poynting_vec(E, B):
-    S = np.cross(E, B)
+def dipole_Poynting(E, H):
+    S = np.cross(E, H)
     return S
 
 
@@ -79,7 +78,7 @@ if __name__ == "__main__":
     t = np.linspace(t0, t1, nt)
 
     Ex, Ez = np.zeros((len(x), len(z))), np.zeros((len(x), len(z)))
-    Bx, By = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
+    Hx, Hy = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
     Sx, Sz = np.zeros((len(x), len(z))), np.zeros((len(x), len(z)))
 
     counter = 0
@@ -87,39 +86,34 @@ if __name__ == "__main__":
         p = _p_0 * np.exp(-1j * _omega * dt)
         for i in range(len(X1)):
             for j in range(len(Z)):
-                E = dipole_e_vec(X1[i][j], 0, Z[i][j], p, dt)
-                B = dipole_b_vec(X2[i][j], Y[i][j], 0, p, dt)
-                S = dipole_poynting_vec(E, B)
+                E = dipole_E(X1[i][j], 0, Z[i][j], p, dt)
+                H = dipole_H(X2[i][j], Y[i][j], 0, p, dt)
+                S = dipole_Poynting(E, H)
                 Ex[i][j] = np.real(E[0])
                 Ez[i][j] = np.real(E[2])
-                Bx[i][j] = np.real(B[0])
-                By[i][j] = np.real(B[1])
+                Hx[i][j] = np.real(H[0])
+                Hy[i][j] = np.real(H[1])
                 Sx[i][j] = np.real(S[0])
                 Sz[i][j] = np.real(S[2])
 
-        plt.rcParams['image.cmap'] = 'cool'
-        B_norm = np.hypot(Bx, By)
-        plt.quiver(X2 / _wavelength, Y / _wavelength, Bx, By, 1 / (2.0 + np.hypot(X2, Y)))
         # S_norm = np.hypot(Sx, Sz)
         # plt.quiver(X1, Z, Sx / S_norm, Sz / S_norm)
-        # plt.rcParams['image.cmap'] = 'winter'
-        # E_norm = np.hypot(Ex, Ez)
-        # plt.quiver(X1, Z, Ex / E_norm, Ez / E_norm, Ez / E_norm)
         # plt.contour(X1, Z, E_norm, levels=np.linspace(2, 10, 4))
-
         # plt.pcolormesh(X1, Z, E_norm, cmap='hot')
-        plt.xlabel(r'$x/\lambda$')
-        plt.ylabel(r'$y/\lambda$')
-        plt.gca().set_aspect('equal')
-        plt.savefig('img/dipole/dipole' + str(counter) + '.png')
-        plt.cla()
-        print('Frame#' + str(counter))
+
+        util.plot_arrows(X1, Z, Ex, Ez, 'winter', Ez / np.hypot(Ex, Ez), normalize=True)
+        util.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_E')
+
+        util.plot_arrows(X2 / _wavelength, Y / _wavelength, Hx, Hy, 'cool', 1 / (2.0 + np.hypot(X2, Y)))
+        util.render_frame(r'$x/\lambda$', r'$y/\lambda$', counter, t, 'dipole_H')
+
+        util.plot_arrows(X1, Z, Sx / 10, Sz / 10)
+        util.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_S')
+
         counter = counter + 1
 
-    with iio.get_writer('img/dipole.gif', mode='I') as writer:
-        for i in range(0, len(t), 1):
-            s = 'img/dipole/dipole' + str(i) + '.png'
-            image = iio.imread(s)
-            writer.append_data(image)
+    util.render_anim(t, 'dipole_H')
+    util.render_anim(t, 'dipole_E')
+    util.render_anim(t, 'dipole_S')
 
     sys.exit(0)
