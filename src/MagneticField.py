@@ -2,6 +2,8 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
+import FieldUtil as utils
+import FieldAnimation as anim
 
 
 class Conductor:
@@ -14,6 +16,9 @@ class Conductor:
         self.r0 = r0
 
     def body(self):
+        return plt.Circle(self.r0, self.R, edgecolor='black', facecolor='white')
+
+    def details(self):
         if self.I == 0:
             I_direction = 'o'
             I_color = 'black'
@@ -21,14 +26,13 @@ class Conductor:
         elif self.I < 0:
             I_direction = 'o'
             I_color = 'black'
-            size = self.R * 50
+            size = self.R * 25
         else:
             I_direction = 'x'
             I_color = 'black'
-            size = self.R * 400
+            size = self.R * 200
 
-        return plt.Circle(self.r0, self.R, edgecolor=I_color, facecolor='white'), \
-               [self.r0[0], self.r0[1], size, I_color, I_direction]
+        return [self.r0[0], self.r0[1], size, I_color, I_direction]
 
     def compute_magnetic_field(self, x, y):
         mag = self.const * (self.I / np.hypot(x - self.r0[0], y - self.r0[1]))
@@ -70,29 +74,25 @@ def compute_bodies(conductors):
     return conductor_bodies
 
 
+def compute_details(conductors):
+    conductor_details = []
+    for conductor in conductors:
+        conductor_details.append(conductor.details())
+    return conductor_details
+
+
 if __name__ == "__main__":
     nx, ny = 100, 100
     x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
 
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111)
-    ax.set(xlim=(-10, 10), ylim=(-10, 10))
-    ax.set_xlabel(r'$y$')
-    ax.set_ylabel(r'$x$')
-    ax.set_aspect('equal')
-
     Bx, By = compute_total_field(x, y, conductors)
-    # Bmax = np.hypot(Bx, By)
-    # ax.quiver(x, y, Bx, By, zorder=1)
-
-    B = ax.streamplot(x, y, Bx, By, zorder=1, color=np.log(np.hypot(Bx, By)), cmap='cool', density=2)
-    # fig.colorbar(B.lines, ax=ax)
     total_bodies = compute_bodies(conductors)
-    for body in total_bodies:
-        ax.add_patch(body[0])
-        ax.scatter(body[1][0], body[1][1], body[1][2], body[1][3], body[1][4], zorder=2)
+    total_details = compute_details(conductors)
 
-    plt.savefig('img/b_field.png')
-    plt.show()
-    plt.close(fig)
+    utils.plot_streamlines(x, y, Bx, By, color=np.log(np.hypot(Bx, By)), cmap='cool', zorder=1, density=2)
+    utils.plot_forms(total_bodies)
+    utils.plot_details(total_details)
+
+    anim.render_frame(loc='wireloop', aspect=True)
+
     sys.exit(0)

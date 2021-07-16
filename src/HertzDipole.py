@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 import FieldUtil as util
-import matplotlib.colors as colors
+import FieldAnimation as anim
 
 "++++++++++++++++++++++Constants++++++++++++++++++++++"
 _frequency = 500E6
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     Hx, Hy = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
     Sx, Sz = np.zeros((len(x), len(z))), np.zeros((len(x), len(z)))
 
-    x_0 = np.linspace(1E-3, 8 * _wavelength, 100)
+    x_0 = np.linspace(1E-3, 10 * _wavelength, 100)
 
     E_xz_0, H_xy_0 = np.zeros(len(x_0)), np.zeros((len(x_0)))
 
@@ -131,24 +131,24 @@ if __name__ == "__main__":
         util.plot_arrows(X1, Z, Ex, Ez, cmap='winter', cap=5.0)
         # util.plot_intensity(X1, Z, np.hypot(Ex, Ez))
         # util.plot_contour(X1, Z, np.hypot(Ex, Ez))
-        util.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_E')
+        anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_E')
 
         util.plot_arrows(X2, Y, Hx, Hy, cmap='cool', cap=0.05)
-        util.render_frame(r'$x/\lambda$', r'$y/\lambda$', counter, t, 'dipole_H')
+        anim.render_frame(r'$x/\lambda$', r'$y/\lambda$', counter, t, 'dipole_H')
 
         # S_dz, S_dx = np.gradient(np.hypot(Sx, Sz))
         util.plot_arrows(X1, Z, Sx, Sz, cmap='hot', cap=0.1)
-        util.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_S')
+        anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_S')
 
         util.plot_normal(x_0, -E_xz_0)
         util.plot_normal(x_0, 1000*H_xy_0)
-        util.render_frame(r'$x/$m', r'$E_{z=0}$ and $H_{y=0}$', counter, t, 'E_xz_0_H_xy_0', [0, 6], [-100, 100], aspect=False)
+        anim.render_frame(r'$x/$m', r'$E_{z=0}$ and $H_{y=0}$', counter, t, 'E_xz_0_H_xy_0', [0, 6.0], [-100, 100], aspect=False)
 
         counter = counter + 1
 
-    util.render_anim(t, 'dipole_H')
-    util.render_anim(t, 'dipole_E')
-    util.render_anim(t, 'dipole_S')
-    util.render_anim(t, 'E_xz_0_H_xy_0')
+    anim.render_anim(t, 'dipole_H')
+    anim.render_anim(t, 'dipole_E')
+    anim.render_anim(t, 'dipole_S')
+    anim.render_anim(t, 'E_xz_0_H_xy_0')
 
     sys.exit(0)
