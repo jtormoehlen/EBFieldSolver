@@ -82,14 +82,16 @@ def compute_details(conductors):
 
 
 if __name__ == "__main__":
-    nx, ny = 100, 100
-    x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
+    n_xy = 100
+    xy_max = 10
+    X, Y = np.meshgrid(np.linspace(-xy_max, xy_max, n_xy),
+                       np.linspace(-xy_max, xy_max, n_xy))
 
-    Bx, By = compute_total_field(x, y, conductors)
+    Bx, By = compute_total_field(X, Y, conductors)
     total_bodies = compute_bodies(conductors)
     total_details = compute_details(conductors)
 
-    utils.plot_streamlines(x, y, Bx, By, color=np.log(np.hypot(Bx, By)), cmap='cool', zorder=1, density=2)
+    utils.plot_streamlines(X, Y, Bx, By, color=np.log(np.hypot(Bx, By)), cmap='cool', zorder=1, density=2)
     utils.plot_forms(total_bodies)
     utils.plot_details(total_details)
 

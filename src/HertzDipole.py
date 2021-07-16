@@ -63,25 +63,17 @@ def dipole_Poynting(E, H):
 
 
 if __name__ == "__main__":
-    nx = 30
-    x_max = 2 * _wavelength
-    x = np.linspace(-x_max, x_max, nx)
-
-    ny = 30
-    y_max = 2 * _wavelength
-    y = np.linspace(-y_max, y_max, ny)
-
-    nz = 30
-    z_max = 2 * _wavelength
-    z = np.linspace(-z_max, z_max, nz)
-
+    n_xyz = 30
+    xyz_max = 2 * _wavelength
+    x = np.linspace(-xyz_max, xyz_max, n_xyz)
+    y = np.linspace(-xyz_max, xyz_max, n_xyz)
+    z = np.linspace(-xyz_max, xyz_max, n_xyz)
     X1, Z = np.meshgrid(x, z)
     X2, Y = np.meshgrid(x, y)
 
-    nt = 25
-    t0 = 0
-    t1 = _T
-    t = np.linspace(t0, t1, nt)
+    n_t = 25
+    t_max = _T
+    t = np.linspace(0, t_max, n_t)
 
     Ex, Ez = np.zeros((len(x), len(z))), np.zeros((len(x), len(z)))
     Hx, Hy = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
@@ -96,15 +88,6 @@ if __name__ == "__main__":
         p = _p_0 * np.exp(-1 * 1j * _omega * dt)
         for i in range(len(X1)):
             for j in range(len(Z)):
-
-                # if np.hypot(X1[i][j], Z[i][j]) <= _R:
-                #     E = np.array([0.0, 0.0, 0.0])
-                #     H = np.array([0.0, 0.0, 0.0])
-                #     S = np.array([0.0, 0.0, 0.0])
-                # else:
-                #     E = dipole_E(X1[i][j], 0, Z[i][j], p, dt)
-                #     H = dipole_H(X2[i][j], Y[i][j], 0, p, dt)
-                #     S = dipole_Poynting(E, H)
 
                 E = dipole_E(X1[i][j], 0, Z[i][j], p, dt)
                 H = dipole_H(X2[i][j], Y[i][j], 0, p, dt)
@@ -123,20 +106,13 @@ if __name__ == "__main__":
             E_xz_0[k] = np.real(dipole_E(x_0[k], 0, 0, p, dt)[2])
             H_xy_0[k] = np.real(dipole_H(x_0[k], 0, 0, p, dt)[1])
 
-        # S_norm = np.hypot(Sx, Sz)
-        # plt.quiver(X1, Z, Sx / S_norm, Sz / S_norm)
-        # plt.contour(X1, Z, E_norm, levels=np.linspace(2, 10, 4))
-        # plt.pcolormesh(X1, Z, E_norm, cmap='hot')
-
         util.plot_arrows(X1, Z, Ex, Ez, cmap='winter', cap=5.0)
-        # util.plot_intensity(X1, Z, np.hypot(Ex, Ez))
-        # util.plot_contour(X1, Z, np.hypot(Ex, Ez))
+        # util.plot_contour(X1, Z, E_norm, levels=np.linspace(2, 10, 4))
         anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_E')
 
         util.plot_arrows(X2, Y, Hx, Hy, cmap='cool', cap=0.05)
         anim.render_frame(r'$x/\lambda$', r'$y/\lambda$', counter, t, 'dipole_H')
 
-        # S_dz, S_dx = np.gradient(np.hypot(Sx, Sz))
         util.plot_arrows(X1, Z, Sx, Sz, cmap='hot', cap=0.1)
         anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_S')
 

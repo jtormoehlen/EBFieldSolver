@@ -101,16 +101,18 @@ def compute_bodies(charges):
 
 
 if __name__ == "__main__":
-    nx, ny = 100, 100
-    x, y = np.meshgrid(np.linspace(-10, 10, nx), np.linspace(-10, 10, ny))
+    n_xy = 100
+    xy_max = 10
+    X, Y = np.meshgrid(np.linspace(-xy_max, xy_max, n_xy),
+                       np.linspace(-xy_max, xy_max, n_xy))
 
-    Ex, Ey = compute_total_field(x, y, charges)
-    total_potentials = compute_total_potentials(x, y, charges)
-    z = np.linspace(np.min(total_potentials) / 10, np.max(total_potentials) / 10, 10)
+    Ex, Ey = compute_total_field(X, Y, charges)
+    Z = compute_total_potentials(X, Y, charges)
+    levels = np.linspace(np.min(Z) / 10, np.max(Z) / 10, 10)
     total_bodies = compute_bodies(charges)
 
-    util.plot_streamlines(x, y, Ex, Ey, color='grey')
-    util.plot_contourf(x, y, total_potentials, z)
+    util.plot_streamlines(X, Y, Ex, Ey, color='grey')
+    util.plot_contourf(X, Y, Z, levels)
     util.plot_forms(total_bodies)
 
     anim.render_frame(loc='quadrupol', aspect=True)

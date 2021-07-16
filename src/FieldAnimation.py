@@ -25,7 +25,17 @@ def render_anim(t, loc):
             writer.append_data(image)
 
 
-def render_frame(x_label=r'$x$', y_label=r'$y$', counter=0, t=[], loc='unknown', x_limit=[], y_limit=[], aspect=True):
+def render_frame(
+        x_label=r'$x$',
+        y_label=r'$y$',
+        counter=0,
+        t=[],
+        loc='unknown',
+        x_limit=[],
+        y_limit=[],
+        aspect=True):
+
+    # plt.rcParams["figure.figsize"] = (20,3)
     if len(x_limit) > 1:
         plt.gca().set(xlim=(x_limit[0], x_limit[1]), ylim=(y_limit[0], y_limit[1]))
     if aspect:
