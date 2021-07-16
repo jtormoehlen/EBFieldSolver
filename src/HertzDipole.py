@@ -63,34 +63,31 @@ def dipole_Poynting(E, H):
 
 
 if __name__ == "__main__":
-    n_xyz = 30
-    xyz_max = 2 * _wavelength
-    x = np.linspace(-xyz_max, xyz_max, n_xyz)
-    y = np.linspace(-xyz_max, xyz_max, n_xyz)
-    z = np.linspace(-xyz_max, xyz_max, n_xyz)
-    X1, Z = np.meshgrid(x, z)
-    X2, Y = np.meshgrid(x, y)
+    n_xy = 100
+    xy_max = 4 * _wavelength
+    x = np.linspace(-xy_max, xy_max, n_xy)
+    y = np.linspace(-xy_max, xy_max, n_xy)
+    X, Y = np.meshgrid(x, y)
+    y_min = np.min(abs(y))
 
     n_t = 25
     t_max = _T
     t = np.linspace(0, t_max, n_t)
 
-    Ex, Ez = np.zeros((len(x), len(z))), np.zeros((len(x), len(z)))
+    Ex, Ez = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
     Hx, Hy = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
-    Sx, Sz = np.zeros((len(x), len(z))), np.zeros((len(x), len(z)))
+    Sx, Sz = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
 
-    x_0 = np.linspace(1E-3, 10 * _wavelength, 100)
-
-    E_xz_0, H_xy_0 = np.zeros(len(x_0)), np.zeros((len(x_0)))
+    x = np.linspace(1E-3, 8 * _wavelength, 200)
+    Ez0, Hy0, Sz0 = np.zeros(len(x)), np.zeros(len(x)), np.zeros(len(x))
 
     counter = 0
     for dt in t:
         p = _p_0 * np.exp(-1 * 1j * _omega * dt)
-        for i in range(len(X1)):
-            for j in range(len(Z)):
-
-                E = dipole_E(X1[i][j], 0, Z[i][j], p, dt)
-                H = dipole_H(X2[i][j], Y[i][j], 0, p, dt)
+        for i in range(len(X)):
+            for j in range(len(Y)):
+                E = dipole_E(X[i][j], 0, Y[i][j], p, dt)
+                H = dipole_H(X[i][j], Y[i][j], 0, p, dt)
                 S = dipole_Poynting(E, H)
 
                 Ex[i][j] = np.real(E[0])
@@ -100,31 +97,34 @@ if __name__ == "__main__":
                 Sx[i][j] = np.real(S[0])
                 Sz[i][j] = np.real(S[2])
 
-        for k in range(len(x_0)):
-            E = dipole_E(x_0[k], 0, 0, p, dt)
-            H = dipole_H(x_0[k], 0, 0, p, dt)
-            E_xz_0[k] = np.real(dipole_E(x_0[k], 0, 0, p, dt)[2])
-            H_xy_0[k] = np.real(dipole_H(x_0[k], 0, 0, p, dt)[1])
+        for k in range(len(x)):
+            E = dipole_E(x[k], 0, 0, p, dt)
+            H = dipole_H(x[k], 0, 0, p, dt)
+            S = dipole_Poynting(E, H)
+            Ez0[k] = np.real(E[2])
+            Hy0[k] = np.real(H[1])
+            Sz0[k] = np.real(S[0])
 
-        util.plot_arrows(X1, Z, Ex, Ez, cmap='winter', cap=5.0)
+        util.plot_arrows(X, Y, Ex, Ez, cmap='winter', cap=5.0)
         # util.plot_contour(X1, Z, E_norm, levels=np.linspace(2, 10, 4))
-        anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_E')
+        anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'D_E')
 
-        util.plot_arrows(X2, Y, Hx, Hy, cmap='cool', cap=0.05)
-        anim.render_frame(r'$x/\lambda$', r'$y/\lambda$', counter, t, 'dipole_H')
+        util.plot_arrows(X, Y, Hx, Hy, cmap='cool', cap=0.05)
+        anim.render_frame(r'$x/\lambda$', r'$y/\lambda$', counter, t, 'D_H')
 
-        util.plot_arrows(X1, Z, Sx, Sz, cmap='hot', cap=0.1)
-        anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'dipole_S')
+        util.plot_arrows(X, Y, Sx, Sz, cmap='hot', cap=0.1)
+        anim.render_frame(r'$x/\lambda$', r'$z/\lambda$', counter, t, 'D_S')
 
-        util.plot_normal(x_0, -E_xz_0)
-        util.plot_normal(x_0, 1000*H_xy_0)
-        anim.render_frame(r'$x/$m', r'$E_{z=0}$ and $H_{y=0}$', counter, t, 'E_xz_0_H_xy_0', [0, 6.0], [-100, 100], aspect=False)
+        util.plot_normal(x, -Ez0)
+        util.plot_normal(x, 1000*Hy0)
+        util.plot_normal(x, 100*Sz0)
+        anim.render_frame(r'$x/$m', r'$E_{z=0}$ and $H_{y=0}$', counter, t, 'Ez0_Hy0', [0, 5.0], [-100, 100], aspect=False)
 
         counter = counter + 1
 
-    anim.render_anim(t, 'dipole_H')
-    anim.render_anim(t, 'dipole_E')
-    anim.render_anim(t, 'dipole_S')
-    anim.render_anim(t, 'E_xz_0_H_xy_0')
+    anim.render_anim(t, 'D_E')
+    anim.render_anim(t, 'D_H')
+    anim.render_anim(t, 'D_S')
+    anim.render_anim(t, 'Ez0_Hy0')
 
     sys.exit(0)
