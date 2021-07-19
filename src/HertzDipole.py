@@ -64,7 +64,7 @@ def dipole_Poynting(E, H):
 
 if __name__ == "__main__":
     n_xy = 100
-    xy_max = 4 * _wavelength
+    xy_max = 1 * _wavelength
     x = np.linspace(-xy_max, xy_max, n_xy)
     y = np.linspace(-xy_max, xy_max, n_xy)
     X, Y = np.meshgrid(x, y)
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
         util.plot_normal(x, -Ez0)
         util.plot_normal(x, 1000*Hy0)
-        util.plot_normal(x, 100*Sz0)
+        # util.plot_normal(x, 100*Sz0)
         anim.render_frame(r'$x/$m', r'$E_{z=0}$ and $H_{y=0}$', counter, t, 'Ez0_Hy0', [0, 5.0], [-100, 100], aspect=False)
 
         counter = counter + 1

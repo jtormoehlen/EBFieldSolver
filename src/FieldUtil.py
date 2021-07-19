@@ -21,14 +21,17 @@ def plot_arrows(x, y, f_x, f_y, cmap=None, map_z=1.0, normalize=False, cap=0):
 def trim(f_x, f_y, cap):
     for i in range(len(f_x)):
         for j in range(len(f_y)):
-            if f_x[i][j] > cap:
-                f_x[i][j] = cap
-            if f_x[i][j] < -cap:
-                f_x[i][j] = -cap
-            if f_y[i][j] > cap:
-                f_y[i][j] = cap
-            if f_y[i][j] < -cap:
-                f_y[i][j] = -cap
+            while f_x[i][j] > cap or f_y[i][j] > cap:
+                f_x[i][j] = 0.9*f_x[i][j]
+                f_y[i][j] = 0.9 * f_y[i][j]
+            while f_x[i][j] < -cap or f_y[i][j] < -cap:
+                f_x[i][j] = 0.9*f_x[i][j]
+                f_y[i][j] = 0.9 * f_y[i][j]
+            # while (-cap > f_x[i][j] > cap) or (-cap > f_y[i][j] > cap):
+            #     f_x[i][j] *= 0.90
+            #     f_y[i][j] *= 0.90
+            #     print('Test')
+            # if (-cap < f_x[i][j] < cap) or (-cap > f_y[i][j] > cap):
     return f_x, f_y
 
 
