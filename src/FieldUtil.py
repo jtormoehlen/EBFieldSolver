@@ -2,36 +2,29 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def plot_arrows(x, y, f_x, f_y, cmap=None, map_z=1.0, normalize=False, cap=0):
+def plot_arrows(x, y, f_x, f_y, cmap=None, cvalue=0, normalize=False):
     if normalize:
         f_norm = np.hypot(f_x, f_y)
     else:
         f_norm = 1.0
-    if cap > 0:
-        f_x, f_y = trim(f_x, f_y, cap)
     if cmap is None:
         plt.gca().set_facecolor('white')
         plt.quiver(x, y, f_x / f_norm, f_y / f_norm)
     else:
         plt.gca().set_facecolor('black')
         plt.rcParams['image.cmap'] = cmap
-        plt.quiver(x, y, f_x / f_norm, f_y / f_norm, np.hypot(f_x, f_y))
+        plt.quiver(x, y, f_x / f_norm, f_y / f_norm, cvalue)
 
 
 def trim(f_x, f_y, cap):
     for i in range(len(f_x)):
         for j in range(len(f_y)):
             while f_x[i][j] > cap or f_y[i][j] > cap:
-                f_x[i][j] = 0.9*f_x[i][j]
+                f_x[i][j] = 0.9 * f_x[i][j]
                 f_y[i][j] = 0.9 * f_y[i][j]
             while f_x[i][j] < -cap or f_y[i][j] < -cap:
-                f_x[i][j] = 0.9*f_x[i][j]
+                f_x[i][j] = 0.9 * f_x[i][j]
                 f_y[i][j] = 0.9 * f_y[i][j]
-            # while (-cap > f_x[i][j] > cap) or (-cap > f_y[i][j] > cap):
-            #     f_x[i][j] *= 0.90
-            #     f_y[i][j] *= 0.90
-            #     print('Test')
-            # if (-cap < f_x[i][j] < cap) or (-cap > f_y[i][j] > cap):
     return f_x, f_y
 
 
@@ -40,9 +33,9 @@ def plot_normal(x, f_x):
     plt.plot(x, f_x)
 
 
-def plot_contour(x, y, f_xy):
+def plot_contour(x, y, f_xy, levels=None):
     plt.gca().set_facecolor('white')
-    plt.contour(x, y, f_xy, levels=np.linspace(np.min(f_xy), np.max(f_xy), 10))
+    plt.contour(x, y, f_xy, levels=levels)
 
 
 def plot_contourf(x, y, f_xy, levels, cmap='bwr'):

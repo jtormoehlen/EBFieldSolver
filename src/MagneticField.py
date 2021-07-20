@@ -46,13 +46,13 @@ conductors = []
 # conductors.append(Conductor(50E-3, [0.0, 0.0]))
 
 # conductor loop
-conductors.append(Conductor(-1.0, [0.0, 3.0]))
-conductors.append(Conductor(1.0, [0.0, -3.0]))
+# conductors.append(Conductor(-1.0, [0.0, 3.0]))
+# conductors.append(Conductor(1.0, [0.0, -3.0]))
 
 # coil
-# for i in np.linspace(-5, 5, 10):
-#     conductors.append(Conductor(-1.0, [i, 3.0]))
-#     conductors.append(Conductor(1.0, [i, -3.0]))
+for i in np.linspace(-5, 5, 10):
+    conductors.append(Conductor(-1.0, [i - 0.5, 3.0]))
+    conductors.append(Conductor(1.0, [i, -3.0]))
 
 
 def compute_total_field(x, y, conductors):
