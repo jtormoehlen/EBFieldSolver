@@ -38,6 +38,9 @@ def render_frame(
     # plt.rcParams["figure.figsize"] = (20,3)
     if len(x_limit) > 1:
         plt.gca().set(xlim=(x_limit[0], x_limit[1]), ylim=(y_limit[0], y_limit[1]))
+        plt.rcParams["figure.figsize"] = (x_limit[0], y_limit[0])
+    else:
+        plt.rcParams["figure.figsize"] = (7.5, 7.5)
     if aspect:
         plt.gca().set_aspect('equal')
     else:

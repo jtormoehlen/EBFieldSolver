@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from mpl_toolkits import mplot3d
 
 
 def plot_arrows(x, y, f_x, f_y, cmap=None, cvalue=0, normalize=False):
@@ -41,6 +42,11 @@ def plot_contour(x, y, f_xy, levels=None):
 def plot_contourf(x, y, f_xy, levels, cmap='bwr'):
     plt.gca().set_facecolor('white')
     plt.contourf(x, y, f_xy, levels, cmap=cmap)
+
+
+def plot_contour3d(x, y, f_xy):
+    ax = plt.axes(projection='3d')
+    ax.contour3D(x, y, f_xy, 50, cmap='binary')
 
 
 def plot_streamlines(x, y, f_x, f_y, color='black', cmap=None, zorder=2, density=1):

@@ -13,7 +13,7 @@ class PointCharge:
     def __init__(self, q, r0):
         self.q = q
         self.r0 = r0
-        self.R = 0.1
+        self.R = 0.25
 
     def body(self):
         if self.q == 0:
@@ -47,13 +47,6 @@ charges = []
 # dipole charge
 # charges.append(PointCharge(1.0, [0.0, -1.0]))
 # charges.append(PointCharge(-1.0, [0.0, 1.0]))
-
-# triple charge
-# a = 4.0
-# charges.append(PointCharge(-1.0, [0.0, 0.0]))
-# charges.append(PointCharge(-1.0, [0.0, 0.0]))
-# charges.append(PointCharge(1.0, [a, 0.0]))
-# charges.append(PointCharge(-1.0, [0.0, a]))
 
 # quadrupole charge
 charges.append(PointCharge(-1.0, [-1.0, 1.0]))

@@ -165,15 +165,16 @@ if __name__ == "__main__":
         # Ez_mean = np.mean(np.sqrt(Ez ** 2))
         # util.plot_contour(X, Y, np.sqrt(Ez ** 2), levels=np.linspace(0, 2 * Ez_mean, 5))
         # util.plot_intensity(X, Y, np.hypot(Ex, Ez))
+        # util.plot_contour3d(X, Y, np.hypot(Ex, Ez))
         util.trim(Ex, Ez, cap=10.0)
-        util.plot_arrows(X, Y, Ex, Ez, cmap='winter', cvalue=Ez)
+        util.plot_arrows(X, Y, Ex, Ez, cmap='winter', cvalue=Ez / np.hypot(Ex, Ez))
         anim.render_frame(r'$x/$m', r'$z/$m', counter, t, 'D_E')
 
         util.trim(Hx, Hy, cap=0.05)
         util.plot_arrows(X, Y, Hx, Hy, cmap='cool', cvalue=np.array([Hx, Hy]) * e_phi)
         anim.render_frame(r'$x/$m', r'$y/$m', counter, t, 'D_H')
 
-        util.trim(Sx, Sz, cap=0.1)
+        util.trim(Sx, Sz, cap=0.5)
         util.plot_arrows(X, Y, Sx, Sz, cmap='hot', cvalue=np.array([Sx, Sz]) * e_r)
         anim.render_frame(r'$x/$m', r'$z/$m', counter, t, 'D_S')
 
