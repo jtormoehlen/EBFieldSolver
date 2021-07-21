@@ -4,7 +4,7 @@ import numpy as np
 import FieldUtil as util
 import FieldAnimation as anim
 
-"++++++++++++++++++++++Constants++++++++++++++++++++++"
+"CONSTANTS"
 _frequency = 500E6
 _power = 1
 
