@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-
+# (*$a^2 + b^2 = c^2$*)
 class PointCharge:
     epsilon_0 = 8.85E-12
     const = 1 / (4 * np.pi * epsilon_0)
@@ -23,11 +23,14 @@ class PointCharge:
 
     def compute_field(self, x, y):
         r = np.hypot(x - self.r0[0], y - self.r0[1])
-        return self.const * self.q * (x - self.r0[0]) / r ** 3, self.const * self.q * (y - self.r0[1]) / r ** 3
+        Ex = self.const * self.q * (x - self.r0[0]) / r ** 3
+        Ey = self.const * self.q * (y - self.r0[1]) / r ** 3
+        return [Ex, Ey]
 
     def compute_potential(self, x, y):
         r = np.hypot(x - self.r0[0], y - self.r0[1])
-        return self.const * self.q * (1 / r)
+        phi = self.const * self.q * (1 / r)
+        return phi
 
 
 class Conductor:
@@ -62,4 +65,5 @@ class Conductor:
         mag = self.const * (self.I / np.hypot(x - self.r0[0], y - self.r0[1]))
         Bx = mag * (-np.sin(np.arctan2(x - self.r0[0], y - self.r0[1])))
         By = mag * (np.cos(np.arctan2(x - self.r0[0], y - self.r0[1])))
-        return By, Bx
+
+        return [By, Bx]

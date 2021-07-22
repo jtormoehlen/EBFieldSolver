@@ -1,6 +1,9 @@
 import sys
 
 import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+
 import FieldUtil as util
 import FieldAnimation as anim
 
@@ -21,7 +24,7 @@ _p_0 = np.array([0.0, 0.0, _p_norm])
 
 _R = 0.05
 _q = 1E-10
-_d0 = _wavelength / 2
+_d0 = _wavelength
 
 
 def dipole_E(x, y, z, p, t):
@@ -171,6 +174,7 @@ if __name__ == "__main__":
         anim.render_frame(r'$x/$m', r'$z/$m', counter, t, 'D_E')
 
         util.trim(Hx, Hy, cap=0.05)
+        # cmap = LinearSegmentedColormap.from_list('my_color', [(1, 0, 0), (0, 0, 1)], N=2)
         util.plot_arrows(X, Y, Hx, Hy, cmap='cool', cvalue=np.array([Hx, Hy]) * e_phi)
         anim.render_frame(r'$x/$m', r'$y/$m', counter, t, 'D_H')
 

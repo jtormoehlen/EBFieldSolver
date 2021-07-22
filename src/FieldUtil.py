@@ -55,9 +55,9 @@ def plot_streamlines(x, y, f_x, f_y, color='black', cmap=None, zorder=2, density
     plt.streamplot(x, y, f_x, f_y, color=color, cmap=cmap, zorder=zorder, density=density)
 
 
-def plot_intensity(x, y, f_xy):
-    plt.gca().set_facecolor('black')
-    plt.pcolormesh(x, y, f_xy, cmap='hot')
+def plot_intensity(x, y, f_xy, cmap='hot'):
+    plt.gca().set_facecolor('white')
+    plt.pcolormesh(x, y, f_xy, cmap=cmap)
 
 
 def plot_forms(forms):
