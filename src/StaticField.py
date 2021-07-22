@@ -61,11 +61,6 @@ def compute_total_field(x, y, field_objects, potential_field=False):
     return [x_field, y_field]
 
 
-def norm_total_field(x, y, field_objects):
-    field_x, field_y = compute_total_field(x, y, field_objects)
-    return np.hypot(field_x, field_y)
-
-
 def compute_bodies(field_objects):
     bodies = []
     for field_object in field_objects:
@@ -91,7 +86,7 @@ if __name__ == "__main__":
     levels = np.linspace(np.min(Z[0]) / 10, np.max(Z[0]) / 10, 10)
     total_bodies = compute_bodies(charges)
 
-    div_E = FieldOperation.divergence(E)
+    # div_E = FieldOperation.divergence(X, Y, E)
     grad_phi = FieldOperation.gradient(Z[0])
     grad_phi_norm = np.hypot(grad_phi[0], grad_phi[1])
 
@@ -104,10 +99,21 @@ if __name__ == "__main__":
     anim.render_frame(loc='charges', aspect=True)
 
     B = compute_total_field(X, Y, conductors)
+    # A = np.array([0, 0, compute_total_field(X, Y, conductors, potential_field=True)])
     total_bodies = compute_bodies(conductors)
     total_details = compute_details(conductors)
 
-    util.plot_streamlines(X, Y, B[0], B[1], color=np.log(np.hypot(B[0], B[1])), cmap='cool', zorder=1, density=2)
+    rot_Ax, rot_Ay = np.zeros((len(X), len(Y))), np.zeros((len(X), len(Y)))
+    for conductor in conductors:
+        for i in range(len(X)):
+            for j in range(len(Y)):
+                rot_x, rot_y = FieldOperation.curl_x(X[i][j], Y[i][j], conductor)
+                rot_Ax[i][j] += rot_x
+                rot_Ay[i][j] += rot_y
+    rot_A_norm = np.hypot(rot_Ax, rot_Ay)
+
+    # util.plot_arrows(X, Y, rot_A_x / rot_A_norm, rot_A_y / rot_A_norm)
+    util.plot_streamlines(X, Y, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool', zorder=1, density=2)
     util.plot_forms(total_bodies)
     util.plot_details(total_details)
 

@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+
 # (*$a^2 + b^2 = c^2$*)
 class PointCharge:
     epsilon_0 = 8.85E-12
@@ -50,7 +51,7 @@ class Conductor:
             I_direction = 'o'
             I_color = 'black'
             size = self.R * 0
-        elif self.I < 0:
+        elif self.I > 0:
             I_direction = 'o'
             I_color = 'black'
             size = self.R * 25
@@ -67,3 +68,8 @@ class Conductor:
         By = mag * (np.cos(np.arctan2(x - self.r0[0], y - self.r0[1])))
 
         return [By, Bx]
+
+    def compute_potential(self, x, y):
+        mag = -(1 / 2) * self.const * self.I
+        Bz = mag * np.log((x - self.r0[0])**2 + (y - self.r0[1])**2)
+        return Bz
