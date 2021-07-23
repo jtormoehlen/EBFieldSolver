@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import FieldUtil as util
 import FieldAnimation as anim
-import FieldOperation
+import FieldOperator
 
 from FieldObject import PointCharge, Conductor
 
@@ -37,8 +37,8 @@ conductors = []
 # conductors.append(Conductor(1.0, [0.0, 0.0]))
 
 # conductor loop
-conductors.append(Conductor(-1.0, [0.0, 3.0]))
-conductors.append(Conductor(1.0, [0.0, -3.0]))
+conductors.append(Conductor(1.0, [0.0, 3.0]))
+conductors.append(Conductor(-1.0, [0.0, -3.0]))
 
 # coil
 # for i in np.linspace(-5, 5, 10):
@@ -52,10 +52,10 @@ def compute_total_field(x, y, field_objects, potential_field=False):
         for i in range(len(x)):
             for j in range(len(y)):
                 if potential_field:
-                    field = field_object.compute_potential(x[i][j], y[i][j])
+                    field = field_object.compute_potential(x[i][j], y[i][j], 0)
                     x_field[i][j] += field
                 else:
-                    field = field_object.compute_field(x[i][j], y[i][j])
+                    field = field_object.compute_field(x[i][j], y[i][j], 0)
                     x_field[i][j] += field[0]
                     y_field[i][j] += field[1]
     return [x_field, y_field]
@@ -81,25 +81,24 @@ if __name__ == "__main__":
     X, Y = np.meshgrid(np.linspace(-xy_max, xy_max, n_xy),
                        np.linspace(-xy_max, xy_max, n_xy))
 
+    "E-Field of charges"
     E = compute_total_field(X, Y, charges)
     Z = compute_total_field(X, Y, charges, potential_field=True)
     levels = np.linspace(np.min(Z[0]) / 10, np.max(Z[0]) / 10, 10)
     total_bodies = compute_bodies(charges)
 
     # div_E = FieldOperation.divergence(X, Y, E)
-    grad_phi = FieldOperation.gradient(Z[0])
+    grad_phi = FieldOperator.grad(Z[0])
     grad_phi_norm = np.hypot(grad_phi[0], grad_phi[1])
 
-    # util.plot_arrows(X, Y, grad_phi[0] / grad_phi_norm, grad_phi[1] / grad_phi_norm)
-    # util.plot_intensity(X, Y, div_E, cmap='coolwarm')
     util.plot_streamlines(X, Y, grad_phi[0], grad_phi[1], color='grey')
     util.plot_contourf(X, Y, Z[0], levels)
     util.plot_forms(total_bodies)
 
     anim.render_frame(loc='charges', aspect=True)
 
+    "B-Field of conductors"
     B = compute_total_field(X, Y, conductors)
-    # A = np.array([0, 0, compute_total_field(X, Y, conductors, potential_field=True)])
     total_bodies = compute_bodies(conductors)
     total_details = compute_details(conductors)
 
@@ -107,12 +106,11 @@ if __name__ == "__main__":
     for conductor in conductors:
         for i in range(len(X)):
             for j in range(len(Y)):
-                rot_x, rot_y = FieldOperation.curl_x(X[i][j], Y[i][j], conductor)
+                rot_x, rot_y, rot_z = FieldOperator.curl(X[i][j], Y[i][j], 0, conductor.compute_potential)
                 rot_Ax[i][j] += rot_x
                 rot_Ay[i][j] += rot_y
     rot_A_norm = np.hypot(rot_Ax, rot_Ay)
 
-    # util.plot_arrows(X, Y, rot_A_x / rot_A_norm, rot_A_y / rot_A_norm)
     util.plot_streamlines(X, Y, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool', zorder=1, density=2)
     util.plot_forms(total_bodies)
     util.plot_details(total_details)
