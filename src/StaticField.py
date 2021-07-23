@@ -80,12 +80,14 @@ if __name__ == "__main__":
     util.plot_streamlines(X, Y, grad_phix, grad_phiy, color=np.log(grad_phi_norm), cmap='cool')
     util.plot_contour(X, Y, phi, phi_levels)
     util.plot_forms(E_total_forms)
+    anim.window()
     anim.render_frame(loc='charges')
 
     util.plot_streamlines(X, Y, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool')
     util.plot_contour(X, Y, A)
     util.plot_forms(B_total_forms)
     util.plot_details(B_total_details)
+    anim.window()
     anim.render_frame(loc='conductors')
 
     sys.exit(0)

@@ -76,7 +76,7 @@ if __name__ == "__main__":
     Hx, Hy = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
     Sx, Sz = np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
 
-    counter = 0
+    pos = 0
     for dt in t:
         p = _p_0 * np.exp(-1j * _omega * dt)
         for i in range(len(X)):
@@ -94,17 +94,20 @@ if __name__ == "__main__":
 
         util.trim(Ex, Ez, cap=10.0)
         util.plot_arrows(X, Y, Ex, Ez, cmap='winter', cvalue=Ez / np.hypot(Ex, Ez))
-        anim.render_frame(r'$x/$m', r'$z/$m', counter, t, 'D_E')
+        anim.window(labels=[r'$x/$m', r'$z/$m'])
+        anim.render_frame(t=t, loc='D_E', pos=pos)
 
         util.trim(Hx, Hy, cap=0.05)
         util.plot_arrows(X, Y, Hx, Hy, cmap='cool', cvalue=np.array([Hx, Hy]) * e_phi)
-        anim.render_frame(r'$x/$m', r'$y/$m', counter, t, 'D_H')
+        anim.window(labels=[r'$x/$m', r'$y/$m'])
+        anim.render_frame(t=t, loc='D_H', pos=pos)
 
         util.trim(Sx, Sz, cap=0.5)
         util.plot_arrows(X, Y, Sx, Sz, cmap='hot', cvalue=np.array([Sx, Sz]) * e_r)
-        anim.render_frame(r'$x/$m', r'$z/$m', counter, t, 'D_S')
+        anim.window(labels=[r'$x/$m', r'$z/$m'])
+        anim.render_frame(t=t, loc='D_S', pos=pos)
 
-        counter = counter + 1
+        pos += 1
 
     anim.render_anim(t, 'D_E')
     anim.render_anim(t, 'D_H')
