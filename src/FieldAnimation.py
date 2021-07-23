@@ -1,23 +1,10 @@
 import imageio as iio
 import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import animation
 
 
-def init():
-    return []
-
-
-def update(i, f, x, y):
-    # ax.collections = []
-    # ax.patches = []
-    return []
-
-
-# anim = animation.FuncAnimation(fig, update, fargs=(f, x, y), init_func=init, interval=100, blit=True)
-
-
-def render_anim(t, loc):
+def render_anim(
+        t,
+        loc):
     with iio.get_writer('img/dynamic/' + loc + '.gif', mode='I') as writer:
         for i in range(0, len(t), 1):
             s = 'img/temporary/' + loc + str(i) + '.png'
@@ -35,7 +22,6 @@ def render_frame(
         y_limit=[],
         aspect=True):
 
-    # plt.rcParams["figure.figsize"] = (20,3)
     if len(x_limit) > 1:
         plt.gca().set(xlim=(x_limit[0], x_limit[1]), ylim=(y_limit[0], y_limit[1]))
         plt.rcParams["figure.figsize"] = (x_limit[0], y_limit[0])

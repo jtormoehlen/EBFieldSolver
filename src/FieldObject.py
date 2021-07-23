@@ -12,7 +12,7 @@ class PointCharge:
         self.r0 = r0
         self.R = 0.25
 
-    def body(self):
+    def form(self):
         if self.q == 0:
             q_color = 'black'
         elif self.q < 0:
@@ -34,7 +34,7 @@ class PointCharge:
         r = np.hypot(x - self.r0[0], y - self.r0[1])
         phi = self.const * self.q * (1 / r)
 
-        return phi
+        return [phi, 0, 0]
 
 
 class Conductor:
@@ -46,14 +46,14 @@ class Conductor:
         self.R = 0.5
         self.r0 = r0
 
-    def body(self):
+    def form(self):
         return plt.Circle(self.r0, self.R, edgecolor='black', facecolor='white')
 
     def details(self):
         if self.I == 0:
-            I_direction = 'o'
+            I_direction = '*'
             I_color = 'black'
-            size = self.R * 0
+            size = self.R * 200
         elif self.I > 0:
             I_direction = 'o'
             I_color = 'black'
@@ -67,11 +67,11 @@ class Conductor:
 
     def compute_field(self, x, y, z):
         mag = self.const * (self.I / np.hypot(x - self.r0[0], y - self.r0[1]))
-        Bx = mag * (-np.sin(np.arctan2(x - self.r0[0], y - self.r0[1])))
-        By = mag * (np.cos(np.arctan2(x - self.r0[0], y - self.r0[1])))
+        Bx = mag * (np.cos(np.arctan2(x - self.r0[0], y - self.r0[1])))
+        By = mag * (-np.sin(np.arctan2(x - self.r0[0], y - self.r0[1])))
         Bz = 0
 
-        return [By, Bx, Bz]
+        return [Bx, By, Bz]
 
     def compute_potential(self, x, y, z):
         mag = -(1 / 2) * self.const * self.I
