@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-# (*$a^2 + b^2 = c^2$*)
 class PointCharge:
     epsilon_0 = 8.85E-12
     const = 1 / (4 * np.pi * epsilon_0)

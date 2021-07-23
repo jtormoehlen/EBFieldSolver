@@ -28,7 +28,7 @@ charges.append(PointCharge(1.0, [-1.0, -1.0]))
 charges.append(PointCharge(-1.0, [1.0, -1.0]))
 
 # single positive charge
-# charges.append(PointCharge(1.0, [0.0, 0.0]))
+# charges.append(PointCharge(-1.0, [0.0, 0.0]))
 
 "initialize conductors with location and amperage"
 conductors = []
@@ -57,12 +57,14 @@ if __name__ == "__main__":
 
     grad_phix, grad_phiy = np.zeros((len(X), len(Y))), np.zeros((len(X), len(Y)))
     rot_Ax, rot_Ay = np.zeros((len(X), len(Y))), np.zeros((len(X), len(Y)))
+    div_E = np.zeros((len(X), len(Y)))
     for i in range(len(X)):
         for j in range(len(Y)):
             for charge in charges:
                 grad_x, grad_y, grad_z = fo.gradient(X[i][j], Y[i][j], 0, charge.compute_potential)
-                grad_phix[i][j] += grad_x
-                grad_phiy[i][j] += grad_y
+                grad_phix[i][j] -= grad_x
+                grad_phiy[i][j] -= grad_y
+                div_E[i][j] = fo.divergence(X[i][j], Y[i][j], 0, charge.compute_field)
             for conductor in conductors:
                 rot_x, rot_y, rot_z = fo.curl(X[i][j], Y[i][j], 0, conductor.compute_potential)
                 rot_Ax[i][j] += rot_x
