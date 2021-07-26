@@ -1,49 +1,46 @@
 import numpy as np
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+import FieldOperator as fo
 from mpl_toolkits import mplot3d
 
 
-def compute_total_field(x, y, field_objects, potential_field=True):
-    x_field, y_field, z_field = np.zeros((len(x), len(y))), np.zeros((len(x), len(y))), np.zeros((len(x), len(y)))
+def total_field(x, y, z, field_objects, f='', dynamic=False, p=None, dt=0):
+    x_field, y_field, z_field = np.zeros((len(x), len(x))), np.zeros((len(y), len(y))), np.zeros((len(z), len(z)))
     for field_object in field_objects:
         for i in range(len(x)):
             for j in range(len(y)):
-                if potential_field:
-                    field = field_object.compute_potential(x[i][j], y[i][j], 0)
+                if dynamic:
+                    function = getattr(field_object, f)
+                    field = np.real(function(x[i][j], y[i][j], z[i][j], p, dt))
                 else:
-                    field = field_object.compute_field(x[i][j], y[i][j], 0)
+                    function = getattr(field_object, f)
+                    field = function(x[i][j], y[i][j], z[i][j])
                 x_field[i][j] += field[0]
                 y_field[i][j] += field[1]
                 z_field[i][j] += field[2]
     return [x_field, y_field, z_field]
 
 
-def compute_forms(field_objects):
-    forms = []
-    for field_object in field_objects:
-        forms.append(field_object.form())
-    return forms
+def total_diff(x, y, z, field_objects, f='', nabla=''):
+    nabla_fx, nabla_fy, nabla_fz = np.zeros((len(x), len(x))), np.zeros((len(y), len(y))), np.zeros((len(z), len(z)))
+    for i in range(len(x)):
+        for j in range(len(y)):
+            for field_object in field_objects:
+                operator = getattr(fo, nabla)
+                function = getattr(field_object, f)
+                nabla_x, nabla_y, nabla_z = operator(x[i][j], y[i][j], z[i][j], function)
+                nabla_fx[i][j] += nabla_x
+                nabla_fy[i][j] += nabla_y
+                nabla_fz[i][j] += nabla_z
+    return [nabla_fx, nabla_fy, nabla_fz]
 
 
-def compute_details(field_objects):
-    details = []
-    for field_object in field_objects:
-        details.append(field_object.details())
-    return details
-
-
-def plot_arrows(x, y, f_x, f_y, cmap=None, cvalue=0, normalize=False):
+def arrows(x, y, f_x, f_y, normalize=False, colorgradient=0):
     if normalize:
         f_norm = np.hypot(f_x, f_y)
     else:
         f_norm = 1.0
-    if cmap is None:
-        plt.gca().set_facecolor('white')
-        plt.quiver(x, y, f_x / f_norm, f_y / f_norm)
-    else:
-        plt.gca().set_facecolor('black')
-        plt.rcParams['image.cmap'] = cmap
-        plt.quiver(x, y, f_x / f_norm, f_y / f_norm, cvalue)
+    plt.quiver(x, y, f_x / f_norm, f_y / f_norm, colorgradient)
 
 
 def trim(f_x, f_y, cap):
@@ -58,44 +55,35 @@ def trim(f_x, f_y, cap):
     return f_x, f_y
 
 
-def plot_normal(x, f_x):
-    plt.gca().set_facecolor('white')
-    plt.plot(x, f_x)
-
-
-def plot_contour(x, y, f_xy, levels=None):
-    plt.gca().set_facecolor('white')
+def contours(x, y, f_xy, levels=None):
     plt.contour(x, y, f_xy, levels=levels, colors='k', alpha=0.5)
 
 
-def plot_contourf(x, y, f_xy, levels=None, cmap='bwr'):
-    plt.gca().set_facecolor('white')
+def contoursf(x, y, f_xy, levels=None, cmap='bwr'):
     plt.contourf(x, y, f_xy, levels, cmap=cmap)
 
 
-def plot_contour3d(x, y, f_xy):
+def contours3d(x, y, f_xy):
     ax = plt.axes(projection='3d')
     ax.contour3D(x, y, f_xy, 50, cmap='binary')
 
 
-def plot_streamlines(x, y, f_x, f_y, color='black', cmap=None, zorder=1, density=2):
-    plt.gca().set_facecolor('white')
-    plt.gca().set(xlim=(np.min(x), np.max(x)), ylim=(np.min(y), np.max(y)))
+def streamlines(x, y, f_x, f_y, color='black', cmap=None, zorder=1, density=2):
     plt.streamplot(x, y, f_x, f_y, color=color, cmap=cmap, zorder=zorder, density=density)
 
 
-def plot_intensity(x, y, f_xy, cmap='hot'):
-    plt.gca().set_facecolor('white')
+def intensities(x, y, f_xy, cmap='hot'):
     plt.pcolormesh(x, y, f_xy, cmap=cmap)
 
 
-def plot_forms(forms):
-    plt.gca().set_facecolor('white')
-    for f in forms:
-        plt.gca().add_patch(f)
+def forms(field_objects):
+    for field_object in field_objects:
+        plt.gca().add_patch(field_object.form())
 
 
-def plot_details(details):
-    plt.gca().set_facecolor('white')
+def details(field_objects):
+    details = []
+    for field_object in field_objects:
+        details.append(field_object.details())
     for d in details:
         plt.scatter(d[0], d[1], d[2], d[3], d[4], zorder=3)

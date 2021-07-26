@@ -1,10 +1,8 @@
 import sys
-
 import numpy as np
+import matplotlib.pyplot as plt
 import FieldUtil as util
 import FieldAnimation as anim
-import FieldOperator as fo
-
 from FieldObject import PointCharge, Conductor
 
 "initialize charges with location and q"
@@ -50,43 +48,28 @@ if __name__ == "__main__":
     xy_max = 7.5
     X, Y = np.meshgrid(np.linspace(-xy_max, xy_max, n_xy),
                        np.linspace(-xy_max, xy_max, n_xy))
+    Z = np.zeros((len(X), len(X)))
 
-    phi, phiy, phiz = util.compute_total_field(X, Y, charges)
+    phi, phiy, phiz = util.total_field(X, Y, Z, charges, f='phi_field')
     phi_levels = np.linspace(np.min(phi) / 10, np.max(phi) / 10, 4)
-    Ax, Ay, A = util.compute_total_field(X, Y, conductors)
-
-    grad_phix, grad_phiy = np.zeros((len(X), len(Y))), np.zeros((len(X), len(Y)))
-    rot_Ax, rot_Ay = np.zeros((len(X), len(Y))), np.zeros((len(X), len(Y)))
-    div_E = np.zeros((len(X), len(Y)))
-    for i in range(len(X)):
-        for j in range(len(Y)):
-            for charge in charges:
-                grad_x, grad_y, grad_z = fo.gradient(X[i][j], Y[i][j], 0, charge.compute_potential)
-                grad_phix[i][j] -= grad_x
-                grad_phiy[i][j] -= grad_y
-                div_E[i][j] = fo.divergence(X[i][j], Y[i][j], 0, charge.compute_field)
-            for conductor in conductors:
-                rot_x, rot_y, rot_z = fo.curl(X[i][j], Y[i][j], 0, conductor.compute_potential)
-                rot_Ax[i][j] += rot_x
-                rot_Ay[i][j] += rot_y
-
+    grad_phix, grad_phiy, grad_phiz = util.total_diff(X, Y, Z, charges, f='phi_field', nabla='gradient')
     grad_phi_norm = np.hypot(grad_phix, grad_phiy)
-    rot_A_norm = np.hypot(rot_Ax, rot_Ay)
 
-    E_total_forms = util.compute_forms(charges)
-    B_total_forms = util.compute_forms(conductors)
-    B_total_details = util.compute_details(conductors)
-
-    util.plot_streamlines(X, Y, grad_phix, grad_phiy, color=np.log(grad_phi_norm), cmap='cool')
-    util.plot_contour(X, Y, phi, phi_levels)
-    util.plot_forms(E_total_forms)
+    plt.streamplot(X, Y, -grad_phix, -grad_phiy, color=np.log(grad_phi_norm), cmap='cool')
+    plt.contour(X, Y, phi, phi_levels, colors='k', alpha=0.5)
+    util.forms(charges)
     anim.window()
     anim.render_frame(loc='charges')
 
-    util.plot_streamlines(X, Y, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool')
-    util.plot_contour(X, Y, A)
-    util.plot_forms(B_total_forms)
-    util.plot_details(B_total_details)
+    Ax, Ay, A = util.total_field(X, Y, Z, conductors, f='A_field')
+    A_levels = np.linspace(np.min(A), np.max(A), 7)
+    rot_Ax, rot_Ay, rot_Az = util.total_diff(X, Y, Z, conductors, f='A_field', nabla='curl')
+    rot_A_norm = np.hypot(rot_Ax, rot_Ay)
+
+    plt.streamplot(X, Y, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool')
+    plt.contour(X, Y, A, A_levels, colors='k', alpha=0.5)
+    util.forms(conductors)
+    util.details(conductors)
     anim.window()
     anim.render_frame(loc='conductors')
 

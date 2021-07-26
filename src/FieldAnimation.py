@@ -21,6 +21,8 @@ def render_anim(t, loc):
             image = iio.imread(s)
             writer.append_data(image)
 
+    print('Saving ./dynamic/' + str(loc) + '.gif')
+
 
 def render_frame(t=[None], loc='default', pos=0):
     if t[0] is not None:
@@ -30,8 +32,5 @@ def render_frame(t=[None], loc='default', pos=0):
 
     plt.savefig('img/' + loc + str(pos) + '.png')
     plt.cla()
-    progress(t, loc, pos)
 
-
-def progress(t, loc, pos):
-    print(loc + '#' + str(pos + 1) + "/" + str(len(t)))
+    print('Saving ./' + loc + '.png#' + str(pos + 1) + "/" + str(len(t)))
