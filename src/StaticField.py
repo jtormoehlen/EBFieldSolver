@@ -46,28 +46,28 @@ conductors.append(Conductor(-1.0, [0.0, -3.0]))
 if __name__ == "__main__":
     n_xy = 30
     xy_max = 7.5
-    X, Y = np.meshgrid(np.linspace(-xy_max, xy_max, n_xy),
-                       np.linspace(-xy_max, xy_max, n_xy))
-    Z = np.zeros((len(X), len(X)))
+    xx, yy = np.meshgrid(np.linspace(-xy_max, xy_max, n_xy),
+                         np.linspace(-xy_max, xy_max, n_xy))
+    zz = np.zeros((len(xx), len(xx)))
 
-    phi, phiy, phiz = util.total_field(X, Y, Z, charges, f='phi_field')
+    phi, phiy, phiz = util.total_field(xx, yy, zz, charges, f='phi_field')
     phi_levels = np.linspace(np.min(phi) / 10, np.max(phi) / 10, 4)
-    grad_phix, grad_phiy, grad_phiz = util.total_diff(X, Y, Z, charges, f='phi_field', nabla='gradient')
+    grad_phix, grad_phiy, grad_phiz = util.total_diff(xx, yy, zz, charges, f='phi_field', nabla='gradient')
     grad_phi_norm = np.hypot(grad_phix, grad_phiy)
 
-    plt.streamplot(X, Y, -grad_phix, -grad_phiy, color=np.log(grad_phi_norm), cmap='cool')
-    plt.contour(X, Y, phi, phi_levels, colors='k', alpha=0.5)
+    plt.streamplot(xx, yy, -grad_phix, -grad_phiy, color=np.log(grad_phi_norm), cmap='cool')
+    plt.contour(xx, yy, phi, phi_levels, colors='k', alpha=0.5)
     util.forms(charges)
     anim.window()
     anim.render_frame(loc='charges')
 
-    Ax, Ay, A = util.total_field(X, Y, Z, conductors, f='A_field')
+    Ax, Ay, A = util.total_field(xx, yy, zz, conductors, f='A_field')
     A_levels = np.linspace(np.min(A), np.max(A), 7)
-    rot_Ax, rot_Ay, rot_Az = util.total_diff(X, Y, Z, conductors, f='A_field', nabla='curl')
+    rot_Ax, rot_Ay, rot_Az = util.total_diff(xx, yy, zz, conductors, f='A_field', nabla='curl')
     rot_A_norm = np.hypot(rot_Ax, rot_Ay)
 
-    plt.streamplot(X, Y, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool')
-    plt.contour(X, Y, A, A_levels, colors='k', alpha=0.5)
+    plt.streamplot(xx, yy, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool')
+    plt.contour(xx, yy, A, A_levels, colors='k', alpha=0.5)
     util.forms(conductors)
     util.details(conductors)
     anim.window()
