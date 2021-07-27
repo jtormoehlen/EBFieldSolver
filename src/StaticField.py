@@ -55,7 +55,7 @@ if __name__ == "__main__":
     grad_phix, grad_phiy, grad_phiz = util.total_diff(xx, yy, zz, charges, f='phi_field', nabla='gradient')
     grad_phi_norm = np.hypot(grad_phix, grad_phiy)
 
-    plt.streamplot(xx, yy, -grad_phix, -grad_phiy, color=np.log(grad_phi_norm), cmap='cool')
+    plt.streamplot(xx, yy, -grad_phix, -grad_phiy, color=np.log(grad_phi_norm), cmap='cool', density=2)
     plt.contour(xx, yy, phi, phi_levels, colors='k', alpha=0.5)
     util.forms(charges)
     anim.window()
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     rot_Ax, rot_Ay, rot_Az = util.total_diff(xx, yy, zz, conductors, f='A_field', nabla='curl')
     rot_A_norm = np.hypot(rot_Ax, rot_Ay)
 
-    plt.streamplot(xx, yy, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool')
+    plt.streamplot(xx, yy, rot_Ax, rot_Ay, color=np.log(rot_A_norm), cmap='cool', zorder=1, density=2)
     plt.contour(xx, yy, A, A_levels, colors='k', alpha=0.5)
     util.forms(conductors)
     util.details(conductors)
