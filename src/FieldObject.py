@@ -76,11 +76,11 @@ class Conductor:
 
     def A_field(self, x, y, z):
         mag = -(1. / 2.) * self.const * self.I
-        Bx = 0.
-        By = 0.
-        Bz = mag * np.log((x - self.r0[0])**2 + (y - self.r0[1])**2)
+        Ax = 0.
+        Ay = 0.
+        Az = mag * np.log((x - self.r0[0])**2 + (y - self.r0[1])**2)
 
-        return [Bx, By, Bz]
+        return [Ax, Ay, Az]
 
 
 class HertzDipole:
