@@ -55,7 +55,7 @@ if __name__ == "__main__":
     grad_phix, grad_phiy, grad_phiz = util.total_diff(xx, yy, zz, charges, f='phi_field', nabla='gradient')
     grad_phi_norm = np.hypot(grad_phix, grad_phiy)
 
-    plt.streamplot(xx, yy, -grad_phix, -grad_phiy, color=np.log(grad_phi_norm), cmap='cool', density=2)
+    plt.streamplot(xx, yy, -grad_phix, -grad_phiy, color=np.log(grad_phi_norm), cmap='cool', zorder=1, density=2)
     plt.contour(xx, yy, phi, phi_levels, colors='k', alpha=0.5)
     util.forms(charges)
     anim.window()
