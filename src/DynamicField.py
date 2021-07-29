@@ -1,61 +1,55 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import FieldUtil as util
 import FieldAnimation as anim
 from FieldObject import HertzDipole
+from FieldUtil import field, trim, arrow_field, radius_unit_vector, phi_unit_vector, forms
 
 r0 = np.array([0., 0., 0.])
 frequency = 500.E6
 power = 1.
-oscillating_dipoles = []
-oscillating_dipoles.append(HertzDipole(r0, frequency, power))
+dipole = []
+dipole.append(HertzDipole(r0, frequency, power))
 
 if __name__ == "__main__":
-    n_xy = 50
-    xy_max = 2 * oscillating_dipoles[0].wavelength
-    x = np.linspace(-xy_max, xy_max, n_xy)
-    y = np.linspace(-xy_max, xy_max, n_xy)
-    xx, yy = np.meshgrid(x, y)
-    zz = np.zeros((len(x), len(x)))
-
-    phi = np.arctan2(yy, xx)
-    e_r = np.array([np.cos(phi), np.sin(phi)])
-    e_phi = np.array([-np.sin(phi), np.cos(phi)])
-    e_z = np.array([0., 0., 1.])
+    xy_max = 2 * dipole[0].wavelength
 
     n_t = 50
-    t_max = oscillating_dipoles[0].T
+    t_max = dipole[0].T
     t = np.linspace(0, t_max, n_t)
 
     pos = 0
     for dt in t:
-        p = oscillating_dipoles[0].p_z * np.exp(-1j * oscillating_dipoles[0].omega * dt) * e_z
-        Ex, Ey, Ez = util.total_field(xx, zz, yy, oscillating_dipoles, f='E_field', dynamic=True, p=p, dt=dt)
-        Hx, Hy, Hz = util.total_field(xx, yy, zz, oscillating_dipoles, f='H_field', dynamic=True, p=p, dt=dt)
-        Sx, Sy, Sz = util.total_field(xx, zz, yy, oscillating_dipoles, f='S_field', dynamic=True, p=p, dt=dt)
+        Ex, Ey, Ez = field(xy_max, xy_max, xy_max, field_objects=dipole, function='E_field', t=dt)
+        Hx, Hy, Hz = field(xy_max, xy_max, field_objects=dipole, function='H_field', t=dt)
+        Sx, Sy, Sz = field(xy_max, xy_max, xy_max, field_objects=dipole, function='S_field', t=dt)
 
-        plt.gca().set_facecolor('black')
+        anim.background('black')
 
-        util.trim(Ex, Ez, cap=5.0)
-        plt.quiver(xx, yy, Ex, Ez, Ez / np.hypot(Ex, Ez), cmap='winter')
-        anim.window(labels=[r'$x/$m', r'$z/$m'])
-        anim.render_frame(t=t, loc='D_E', pos=pos)
+        trim(Ex, Ez, cap=5.0)
+        arrow_field(xy_max, xy_max, Ex, Ez, Ez / np.hypot(Ex, Ez), cmap='winter')
+        forms(dipole)
+        anim.axes(labels=[r'$x/$m', r'$z/$m'])
+        anim.save_frame(t=t, loc='D_E', pos=pos)
 
-        util.trim(Hx, Hy, cap=0.01)
-        plt.quiver(xx, yy, Hx, Hy, np.array([Hx, Hy]) * e_phi, cmap='cool')
-        anim.window(labels=[r'$x/$m', r'$y/$m'])
-        anim.render_frame(t=t, loc='D_H', pos=pos)
+        e_phi = phi_unit_vector(xy_max, xy_max)
+        trim(Hx, Hy, cap=0.01)
+        arrow_field(xy_max, xy_max, Hx, Hy, np.array([Hx, Hy]) * e_phi, cmap='cool')
+        forms(dipole)
+        anim.axes(labels=[r'$x/$m', r'$y/$m'])
+        anim.save_frame(t=t, loc='D_H', pos=pos)
 
-        util.trim(Sx, Sz, cap=0.05)
-        plt.quiver(xx, yy, Sx, Sz, np.array([Sx, Sz]) * e_r, cmap='hot')
-        anim.window(labels=[r'$x/$m', r'$z/$m'])
-        anim.render_frame(t=t, loc='D_S', pos=pos)
+        e_r = radius_unit_vector(xy_max, xy_max)
+        trim(Sx, Sz, cap=0.05)
+        arrow_field(xy_max, xy_max, Sx, Sz, np.array([Sx, Sz]) * e_r, cmap='hot')
+        forms(dipole)
+        anim.axes(labels=[r'$x/$m', r'$z/$m'])
+        anim.save_frame(t=t, loc='D_S', pos=pos)
 
         pos += 1
 
-    anim.render_anim(t=t, loc='D_E')
-    anim.render_anim(t=t, loc='D_H')
-    anim.render_anim(t=t, loc='D_S')
+    anim.save_anim(t=t, loc='D_E')
+    anim.save_anim(t=t, loc='D_H')
+    anim.save_anim(t=t, loc='D_S')
 
     sys.exit(0)
