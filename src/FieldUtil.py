@@ -123,8 +123,8 @@ def arrow_field(xy_max, n_xy, f_x, f_y, normalize=False, cfunc=None, cmap=None):
 def arrow_field3d(xyz_max, n_xyz, f_x, f_y, f_z):
     x, y, z = mesh3d(xyz_max, n_xyz)
     anim.aspect_ratio(False)
-    ax = plt.axes(projection='3d')
-    ax.quiver(x, y, z, f_x, f_y, f_z, length=xyz_max / n_xyz, normalize=True)
+    plt.subplot(projection='3d', label='default')
+    plt.quiver(x, y, z, f_x, f_y, f_z, length=xyz_max / n_xyz, normalize=True)
     # p = Circle((0, 0), 1, edgecolor='black', fill=False)
     # ax.add_patch(p)
     # art3d.pathpatch_2d_to_3d(p, z=0, zdir="x")

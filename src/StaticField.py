@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from FieldAnimation import axes, save_frame
-from FieldUtil import field, field_lines, potential_lines, forms
+from FieldUtil import field, field_lines, potential_lines, forms, field3d, arrow_field3d
 from FieldObject import Charge, Current
 
 "initialize charges with location and q"
@@ -36,13 +36,20 @@ if __name__ == "__main__":
     axes()
     save_frame(loc='charges')
 
-    xy_max = 5.
+    xy_max = 7.5
     n_xy = 30.
-    Bx, By, Bz = field(xy_max, n_xy, nabla='curl', objects=currents, function='A')
+    Bx, By, Bz = field(xy_max, n_xy, objects=currents, function='B')
     field_lines(xy_max, n_xy, Bx, By)
-    # plt.quiver(0., 0., 0., 0., 0., 1., color='red')
-    # plt.quiver(0., 0., 1., 0., -1., 0., color='green')
     axes()
-    save_frame(loc='circ_current')
+    save_frame(loc='circ_current2d')
+
+    xy_max = 2.
+    n_xy = 6.
+    Bx, By, Bz = field3d(xy_max, n_xy, objects=currents, function='B')
+    arrow_field3d(xy_max, n_xy, Bx, By, Bz)
+    plt.quiver(0., 0., 0., 0., 0., 1., color='red')
+    plt.quiver(0., 0., 1., 0., -1., 0., color='green')
+    axes()
+    save_frame(loc='circ_current3d')
 
     sys.exit(0)
