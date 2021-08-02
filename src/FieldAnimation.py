@@ -2,16 +2,19 @@ import imageio as iio
 import matplotlib.pyplot as plt
 
 
-def axes(labels=[r'$x$', r'$y$'], limits=[None], size=[10, 10], aspect=True):
-    plt.xlabel(labels[0])
-    plt.ylabel(labels[1])
-    if limits[0] is not None:
-        plt.gca().set(xlim=(-limits[0], limits[0]), ylim=(-limits[1], limits[1]))
+def axes(x_label=r'$x$', y_label=r'$y$', limit=None, size=10):
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    if limit is not None:
+        plt.gca().set(xlim=(-limit, limit), ylim=(-limit, limit))
+    plt.rcParams["figure.figsize"] = (size, size)
+
+
+def aspect_ratio(aspect=True):
     if aspect:
         plt.gca().set_aspect('equal')
     else:
         plt.gca().set_aspect('auto')
-    plt.rcParams["figure.figsize"] = (size[0], size[1])
 
 
 def save_anim(t, loc):
@@ -36,5 +39,5 @@ def save_frame(t=[None], loc='default', pos=0):
     print('Saving ./' + loc + '.png#' + str(pos + 1) + "/" + str(len(t)))
 
 
-def background(color):
+def background_color(color):
     plt.gca().set_facecolor(color)

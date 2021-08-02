@@ -12,7 +12,7 @@ class Charge:
 
     def __init__(self, q, r0):
         self.q = q
-        self.r0 = r0
+        self.r0 = np.array(r0)
         self.R = 0.25
 
     def form(self):
@@ -22,60 +22,42 @@ class Charge:
             q_color = 'blue'
         else:
             q_color = 'red'
-        circle = plt.Circle(self.r0, self.R, color=q_color)
+        circle = plt.Circle((self.r0[0], self.r0[1]), self.R, color=q_color)
         plt.gca().add_patch(circle)
 
-    def E_field(self, x, y, z):
-        r = np.hypot(x - self.r0[0], y - self.r0[1])
-        Ex = self.const * self.q * (x - self.r0[0]) / r ** 3
-        Ey = self.const * self.q * (y - self.r0[1]) / r ** 3
-        Ez = 0.
-        return [Ex, Ey, Ez]
+    def E(self, x, y, z):
+        r = np.array([x, y, z])
+        r_r0_norm = np.linalg.norm(r - self.r0)
+        E = self.const * self.q * ((r - self.r0) / r_r0_norm ** 3)
+        return E
 
-    def phi_field(self, x, y, z):
-        r = np.hypot(x - self.r0[0], y - self.r0[1])
-        phi = self.const * self.q * (1 / r)
+    def phi(self, x, y, z):
+        r = np.array([x, y, z])
+        r_r0_norm = np.linalg.norm(r - self.r0)
+        phi = self.const * self.q * (1 / r_r0_norm)
         return [phi, 0., 0.]
 
 
-class Conductor:
-    const = (mu_0 / (2 * np.pi))
+class Current:
+    const = (mu_0 / (4 * np.pi))
 
-    def __init__(self, I, r0):
-        self.I = I
-        self.R = 0.5
-        self.r0 = r0
+    def __init__(self, q, r0, v):
+        self.q = q
+        self.r0 = np.array(r0)
+        self.v = np.array(v)
 
-    def form(self):
-        if self.I == 0:
-            I_direction = '*'
-            I_color = 'black'
-            size = self.R + 100
-        elif self.I > 0:
-            I_direction = 'o'
-            I_color = 'black'
-            size = self.R + 10
-        else:
-            I_direction = 'x'
-            I_color = 'black'
-            size = self.R + 100
-        circle = plt.Circle(self.r0, self.R, edgecolor='black', facecolor='white')
-        plt.gca().add_patch(circle)
-        plt.scatter(self.r0[0], self.r0[1], size, I_color, I_direction, zorder=2)
+    def B(self, x, y, z):
+        r = np.array([x, y, z])
+        r_r0_norm = np.linalg.norm(r - self.r0)
+        v_cross_r_r0 = np.cross(self.v, r - self.r0)
+        B = self.const * ((self.q * v_cross_r_r0) / (r_r0_norm ** 3))
+        return B
 
-    def B_field(self, x, y, z):
-        mag = self.const * (self.I / np.hypot(x - self.r0[0], y - self.r0[1]))
-        Bx = mag * (np.cos(np.arctan2(x - self.r0[0], y - self.r0[1])))
-        By = mag * (-np.sin(np.arctan2(x - self.r0[0], y - self.r0[1])))
-        Bz = 0.
-        return [Bx, By, Bz]
-
-    def A_field(self, x, y, z):
-        mag = -(1. / 2.) * self.const * self.I
-        Ax = 0.
-        Ay = 0.
-        Az = mag * np.log(np.sqrt((x - self.r0[0])**2 + (y - self.r0[1])**2))
-        return [Ax, Ay, Az]
+    def A(self, x, y, z):
+        r = np.array([x, y, z])
+        r_r0_norm = np.linalg.norm(r - self.r0)
+        A = self.const * ((self.q * self.v) / r_r0_norm)
+        return A
 
 
 class HertzDipole:
@@ -99,7 +81,7 @@ class HertzDipole:
         p = self.p_z * np.exp(-1j * self.omega * t) * e_z
         return p
 
-    def E_field(self, x, y, z, t):
+    def E(self, x, y, z, t):
         p = self.p(t)
         r = np.array([x, y, z]) - self.r0
         r_norm = np.linalg.norm(r)
@@ -119,7 +101,7 @@ class HertzDipole:
         E = c1 * ((rcrossp_cross_r * c3) + (r_dot_rdotp * (c4 - c5))) * np.exp(c6)
         return E
 
-    def H_field(self, x, y, z, t):
+    def H(self, x, y, z, t):
         p = self.p(t)
         r = np.array([x, y, z]) - self.r0
         r_norm = np.linalg.norm(r)
@@ -135,7 +117,7 @@ class HertzDipole:
         H = c1 * r_cross_p * (c3 + c4) * np.exp(c5)
         return H
 
-    def S_field(self, x, y, z, t):
-        E = self.E_field(x, y, z, t)
-        H = self.H_field(x, y, z, t)
+    def S(self, x, y, z, t):
+        E = self.E(x, y, z, t)
+        H = self.H(x, y, z, t)
         return np.cross(E, H)
