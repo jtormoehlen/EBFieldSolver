@@ -17,7 +17,7 @@ charges.append(Charge(-1., [1., -1., 0.]))
 
 "initialize electric circulating current with location, charge and velocity"
 currents = []
-for angle in np.linspace(0, 2. * np.pi, 8):
+for angle in np.linspace(0, 2. * np.pi, 32):
     r_z = np.cos(angle)
     r_y = np.sin(angle)
     v_z = -np.sin(angle)
@@ -38,8 +38,9 @@ if __name__ == "__main__":
 
     xy_max = 7.5
     n_xy = 30.
-    Bx, By, Bz = field(xy_max, n_xy, objects=currents, function='B')
-    field_lines(xy_max, n_xy, Bx, By)
+    Bx, By, Bz = field(xy_max, n_xy, plane='xz', objects=currents, function='B')
+    field_lines(xy_max, n_xy, Bx, Bz)
+    forms(currents)
     axes()
     save_frame(loc='circ_current2d')
 

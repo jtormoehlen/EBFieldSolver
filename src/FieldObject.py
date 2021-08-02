@@ -16,13 +16,8 @@ class Charge:
         self.R = 0.25
 
     def form(self):
-        if self.q == 0:
-            q_color = 'black'
-        elif self.q < 0:
-            q_color = 'blue'
-        else:
-            q_color = 'red'
-        circle = plt.Circle((self.r0[0], self.r0[1]), self.R, color=q_color)
+        qcolor = 'blue' if self.q < 0 else 'red'
+        circle = plt.Circle((self.r0[0], self.r0[1]), self.R, color=qcolor)
         plt.gca().add_patch(circle)
 
     def E(self, x, y, z):
@@ -34,8 +29,8 @@ class Charge:
     def phi(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        phi = self.const * self.q * (1 / r_r0_norm)
-        return [phi, 0., 0.]
+        phi = self.const * self.q * (1 / r_r0_norm) * np.array([1., 0., 0.])
+        return phi
 
 
 class Current:
@@ -45,6 +40,13 @@ class Current:
         self.q = q
         self.r0 = np.array(r0)
         self.v = np.array(v)
+        self.R = 0.2
+
+    def form(self):
+        isymbol = 'x' if self.v[2] < 0 else 'o'
+        circle = plt.Circle((self.r0[0], self.r0[2]), self.R, color='grey', alpha=0.5)
+        plt.gca().add_patch(circle)
+        # plt.scatter(self.r0[0], self.r0[2], self.R*10, 'black', isymbol, zorder=2)
 
     def B(self, x, y, z):
         r = np.array([x, y, z])
@@ -62,7 +64,7 @@ class Current:
 
 class HertzDipole:
     def __init__(self, r0, frequency, power):
-        self.r0 = r0
+        self.r0 = np.array(r0)
         self.R = 0.05
         self.frequency = frequency
         self.T = 1. / frequency
@@ -73,7 +75,7 @@ class HertzDipole:
         self.p_z = np.sqrt(12. * np.pi * c * self.power / (mu_0 * self.omega ** 4))
 
     def form(self):
-        ellipse = patch.Ellipse(self.r0, 0.1, 0.2, color='grey', alpha=0.5)
+        ellipse = patch.Ellipse((self.r0[0], self.r0[1]), 0.1, 0.2, color='grey', alpha=0.5)
         plt.gca().add_patch(ellipse)
 
     def p(self, t):
