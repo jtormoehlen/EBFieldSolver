@@ -1,14 +1,16 @@
 import sys
 import numpy as np
 import FieldAnimation as anim
-from FieldObject import HertzDipole
-from FieldUtil import field, arrow_field, phi_unit_vector, radius_unit_vector, length
+from FieldObject import HertzDipole, DipoleAntenna
+from FieldUtil import field, arrow_field, phi_unit_vector, radius_unit_vector, field_round
 
-r0 = np.array([0., 0., 0.])
+r0 = [0., 0., 0.]
 frequency = 500.E6
 power = 1.
 dipole = []
 dipole.append(HertzDipole(r0, frequency, power))
+# dipole.append(DipoleAntenna(r0, frequency, 1., 0.5))
+
 
 if __name__ == "__main__":
     xyz_max = 2 * dipole[0].wavelength
@@ -18,36 +20,36 @@ if __name__ == "__main__":
     t_max = dipole[0].T
     t = np.linspace(0, t_max, n_t)
 
-    pos = 0
-    for dt in t:
-        Ex, Ey, Ez = field(xyz_max, n_xyz, plane='xz', objects=dipole, function='E', t=dt)
-        Hx, Hy, Hz = field(xyz_max, n_xyz, plane='xy', objects=dipole, function='H', t=dt)
-        Sx, Sy, Sz = field(xyz_max, n_xyz, plane='xz', objects=dipole, function='S', t=dt)
+    index = 0
+    for t_i in t:
+        Ex, Ey, Ez = field(xyz_max, n_xyz, plane='xz', objects=dipole, function='E', t=t_i)
+        Hx, Hy, Hz = field(xyz_max, n_xyz, plane='xy', objects=dipole, function='H', t=t_i)
+        Sx, Sy, Sz = field(xyz_max, n_xyz, plane='xz', objects=dipole, function='S', t=t_i)
 
-        length(Ex, Ez, cap=2.5)
+        field_round(Ex, Ez, xyz_max, n_xyz, 50.)
         arrow_field(xyz_max, n_xyz, Ex, Ez,
-                    cfunc=Ez/np.hypot(Ex, Ez), cmap='winter')
-        anim.axes(x_label=r'$x/$m', y_label=r'$z/$m')
-        anim.save_frame(t=t, loc='E', pos=pos)
+                    cfunc=Ez, cmap='winter')
+        anim.show_frame(y_label='$z$', location='E', back_color='black')
+        anim.save_frame(t=t, location='E', index=index)
 
-        e_phi = phi_unit_vector(xyz_max, n_xy=n_xyz)
-        length(Hx, Hy, cap=0.01)
+        e_phi = phi_unit_vector(xyz_max, n_xyz)
+        field_round(Hx, Hy, xyz_max, n_xyz, 0.5)
         arrow_field(xyz_max, n_xyz, Hx, Hy,
-                    cfunc=np.array([Hx, Hy]) * e_phi, cmap='cool')
-        anim.axes(x_label=r'$x/$m', y_label=r'$y/$m')
-        anim.save_frame(t=t, loc='H', pos=pos)
+                    cfunc=Hx * e_phi, cmap='cool')
+        anim.show_frame(location='H', back_color='black')
+        anim.save_frame(t=t, location='H', index=index)
 
         e_r = radius_unit_vector(xyz_max, n_xyz)
-        length(Sx, Sz, cap=0.025)
+        field_round(Sx, Sz, xyz_max, n_xyz, 0.5)
         arrow_field(xyz_max, n_xyz, Sx, Sz,
-                    cfunc=np.array([Sx, Sz]) * e_r, cmap='hot')
-        anim.axes(x_label=r'$x/$m', y_label=r'$z/$m')
-        anim.save_frame(t=t, loc='S', pos=pos)
+                    cfunc=Sx * e_r, cmap='hot')
+        anim.show_frame(y_label='$z$', location='S', back_color='black')
+        anim.save_frame(t=t, location='S', index=index)
 
-        pos += 1
+        index += 1
 
-    anim.save_anim(t=t, loc='E')
-    anim.save_anim(t=t, loc='H')
-    anim.save_anim(t=t, loc='S')
+    anim.save_anim(t=t, location='E')
+    anim.save_anim(t=t, location='H')
+    anim.save_anim(t=t, location='S')
 
     sys.exit(0)

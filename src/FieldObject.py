@@ -2,17 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 
-epsilon_0 = 8.85E-12
-mu_0 = 4 * np.pi * 10E-7
+epsilon_0 = 8.85e-12
+mu_0 = 4 * np.pi * 10e-7
 c = 299792458.
 
 
 class Charge:
     const = 1 / (4 * np.pi * epsilon_0)
 
-    def __init__(self, q, r0):
+    def __init__(self, q, r0_x, r0_y, r0_z=0):
         self.q = q
-        self.r0 = np.array(r0)
+        self.r0 = np.array([r0_x, r0_y, r0_z])
         self.R = 0.25
 
     def form(self):
@@ -123,3 +123,60 @@ class HertzDipole:
         E = self.E(x, y, z, t)
         H = self.H(x, y, z, t)
         return np.cross(E, H)
+
+
+class DipoleAntenna:
+    def __init__(self, r0, frequency, q, L):
+        self.r0 = np.array(r0)
+        self.R = 0.05
+        self.frequency = frequency
+        self.q = q
+        self.T = 1. / frequency
+        self.omega = 2. * np.pi * self.frequency
+        self.wavelength = c / self.frequency
+        self.L = L * self.wavelength
+
+    def E(self, x, y, z, t):
+        r = np.array([x, y, z]) - self.r0
+        r_norm = np.linalg.norm(r)
+        r = r / r_norm
+
+        tau = t - (r_norm / c)
+
+        p = np.array([0.0, 0.0, self.q * self.L * np.sin(self.omega * tau)])
+        p_dot = np.array([0.0, 0.0, self.omega * self.q * self.L * np.cos(self.omega * tau)])
+        p_dotdot = np.array([0.0, 0.0, self.omega ** 2 * self.q * self.L * -np.sin(self.omega * tau)])
+
+        c1 = 1 / (4 * np.pi * epsilon_0)
+        c2 = (np.dot(3 * r, np.dot(p, r)) / r_norm ** 3) - (p / r_norm ** 3)
+        c3 = (np.dot(3 * r, np.dot(p_dot, r)) / (c * r_norm ** 2)) - (p_dot / (c * r_norm ** 2))
+        c4 = (np.dot(r, np.dot(p_dotdot, r)) / (c ** 2 * r_norm)) - (p_dotdot / (c ** 2 * r_norm))
+
+        E = c1 * (c2 + c3 + c4)
+
+        return E
+
+    def B(self, x, y, z, t):
+        r = np.array([x, y, z]) - self.r0
+        r_norm = np.linalg.norm(r)
+        r = r / r_norm
+
+        tau = t - (r_norm / c)
+
+        p_dot = np.array([0.0, 0.0, self.omega * self.q * self.L * np.cos(self.omega * tau)])
+        p_dotdot = np.array([0.0, 0.0, self.omega ** 2 * self.q * self.L * -np.sin(self.omega * tau)])
+
+        c1 = 1 / (4 * np.pi * epsilon_0 * c ** 2 * r_norm ** 2)
+        c2 = np.cross(p_dot, r)
+        c3 = (r_norm / c) * np.cross(p_dotdot, r)
+
+        B = c1 * (c2 + c3)
+
+        return B
+
+    def S(self, x, y, z, t):
+        E = self.E(x, y, z, t)
+        B = self.B(x, y, z, t)
+        S = (1 / mu_0) * np.cross(E, B)
+
+        return S
