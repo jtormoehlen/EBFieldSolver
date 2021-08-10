@@ -1,3 +1,4 @@
+import os
 import imageio as iio
 import matplotlib.pyplot as plt
 
@@ -24,6 +25,7 @@ def save_anim(t, location):
             s = 'img/temporary/' + location + str(i) + '.png'
             image = iio.imread(s)
             writer.append_data(image)
+            os.remove(s)
 
     print('Saving ./dynamic/' + str(location) + '.gif')
 

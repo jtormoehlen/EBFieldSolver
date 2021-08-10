@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import FieldOperator as fo
 import FieldAnimation as anim
+import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits import mplot3d
 from matplotlib.patches import Circle, PathPatch
-import mpl_toolkits.mplot3d.art3d as art3d
 
 
 def field(xy_max, n_xy, objects, plane='xy', nabla='', function='', t=-1):
@@ -112,7 +112,7 @@ def arrow_field(xy_max, n_xy, f_x, f_y, normalize=False, cfunc=None, cmap=None):
     if cfunc is None:
         plt.quiver(x, y, f_x / f_xy_norm, f_y / f_xy_norm, np.log(colorf), cmap='cool')
     else:
-        plt.quiver(x, y, f_x / f_xy_norm, f_y / f_xy_norm, cfunc, cmap=cmap)
+        plt.quiver(x, y, f_x / f_xy_norm, f_y / f_xy_norm, cfunc, cmap='cool')
 
 
 def arrow_field3d(xyz_max, n_xyz, f_x, f_y, f_z):
@@ -120,9 +120,11 @@ def arrow_field3d(xyz_max, n_xyz, f_x, f_y, f_z):
     x, y, z = mesh3d(xyz_max, n_xyz)
     plt.subplot(projection='3d', label='none')
     plt.quiver(x, y, z, f_x, f_y, f_z, length=xyz_max / n_xyz, normalize=True)
-    ring = Circle((0, 0), 1, edgecolor='grey', fill=False)
+    ring = Circle((0, 0), 1, edgecolor='black', fill=False)
     plt.gca().add_patch(ring)
     art3d.pathpatch_2d_to_3d(ring, z=0, zdir="x")
+    plt.quiver(0., 0., 0., 0., 0., 1., color='red')
+    plt.quiver(0., 0., 1., 0., -1., 0., color='green')
 
 
 def potential_lines(xy_max, n_xy, f_xy):
@@ -139,22 +141,37 @@ def field_lines(xy_max, n_xy, f_x, f_y):
     plt.streamplot(x, y, f_x, f_y, color=np.log(f_xy_norm), cmap='cool', zorder=0, density=2)
 
 
+def intensities(xy_max, n_xy, f_x, f_y):
+    x, y = mesh(xy_max, n_xy)
+    f_xy_norm = np.sqrt(f_x ** 2 + f_y ** 2)
+    plt.pcolormesh(x, y, f_xy_norm)
+
+
 def forms(field_objects):
     for field_object in field_objects:
         field_object.form()
 
 
-def radius_unit_vector(xy_max, n_xy):
+def radius_unit(xy_max, n_xy):
     x, y = mesh(xy_max, n_xy)
     phi = np.arctan2(y, x)
     e_r = np.array([np.cos(phi), np.sin(phi)])
-
     return e_r
 
 
-def phi_unit_vector(xy_max, n_xy):
+def phi_unit(xy_max, n_xy):
     x, y = mesh(xy_max, n_xy)
     phi = np.arctan2(y, x)
     e_phi = np.array([-np.sin(phi), np.cos(phi)])
-
     return e_phi
+
+
+def spherical_to_cartesian(x, y, z, v):
+    r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+    theta = np.arccos(z / r)
+    phi = np.arctan2(y, x)
+
+    m1 = [np.sin(theta) * np.cos(phi), np.cos(theta) * np.cos(phi), -np.sin(phi)]
+    m2 = [np.sin(theta) * np.sin(phi), np.cos(theta) * np.sin(phi), np.cos(phi)]
+    m3 = [np.cos(theta), -np.sin(theta), 0]
+    return [np.dot(m1, v), np.dot(m2, v), np.dot(m3, v)]
