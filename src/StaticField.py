@@ -2,12 +2,14 @@ import numpy as np
 from FieldObject import Charge
 from FieldCalculator import static_field_2d, static_field_3d
 
+# charge and its position
+q = x = y = 1.0
 # quadrupole
 quadrupole = []
-quadrupole.append(Charge(-1., -1., 1.))
-quadrupole.append(Charge(1., 1., 1.))
-quadrupole.append(Charge(1., -1., -1.))
-quadrupole.append(Charge(-1., 1., -1.))
+quadrupole.append(Charge(-q, -x, y))
+quadrupole.append(Charge(q, x, y))
+quadrupole.append(Charge(q, -x, -y))
+quadrupole.append(Charge(-q, x, -y))
 
 # conductor loop
 loop = []

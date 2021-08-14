@@ -90,6 +90,7 @@ class Antenna:
 
     def E(self, x, y, z, t):
         if self.L == 0:
+            self.factor = 50.
             p = self.p(t)
             r = np.array([x, y, z]) - self.r0
             r_norm = np.linalg.norm(r)
@@ -116,6 +117,7 @@ class Antenna:
 
     def H(self, x, y, z, t):
         if self.L == 0:
+            self.factor = 0.5
             p = self.p(t)
             r = np.array([x, y, z]) - self.r0
             r_norm = np.linalg.norm(r)
@@ -139,7 +141,10 @@ class Antenna:
     def S(self, x, y, z, t):
         E = self.E(x, y, z, t)
         H = self.H(x, y, z, t)
-        self.factor = 1.e-3
+        if self.L == 0:
+            self.factor = 0.5
+        else:
+            self.factor = 1.e-3
         return np.cross(E, H)
 
     def get_factor(self):
