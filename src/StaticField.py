@@ -1,7 +1,6 @@
 import numpy as np
-from FieldCalculator import fieldXY, fieldXZ, field3d
-from FieldPlot import field_lines, potential_lines, arrow_field3d
 from FieldObject import Charge
+from FieldCalculator import static_field_2d, static_field_3d
 
 # quadrupole
 quadrupole = []
@@ -22,16 +21,8 @@ for angle in np.linspace(0, 2. * np.pi, 36):
 
 if __name__ == "__main__":
     xy_max = 5.
-    n_xy = 20.
-    phi, phiy, phiz = fieldXY(xy_max, n_xy, quadrupole, function='phi')
-    Ex, Ey, Ez = fieldXY(xy_max, n_xy, quadrupole, nabla='gradient', function='phi')
-    potential_lines(xy_max, phi)
-    field_lines(xy_max, -Ex, -Ey, quadrupole)
-
-    Bx, B, Bz = fieldXZ(xy_max, n_xy, loop, function='B')
-    field_lines(xy_max, Bx, Bz, loop)
+    static_field_2d(xy_max, quadrupole, function='E')
+    static_field_2d(xy_max, loop, function='B')
 
     xyz_max = 2.
-    n_xyz = 6.
-    Bx, By, Bz = field3d(xyz_max, n_xyz, loop, function='B')
-    arrow_field3d(xyz_max, Bx, By, Bz)
+    static_field_3d(xyz_max, loop, function='B')

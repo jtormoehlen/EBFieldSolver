@@ -1,17 +1,42 @@
 import numpy as np
 import FieldOperator as fo
+import FieldPlot as fp
+import FieldAnimation as fa
 
 
-def fieldXY(xy_max, n_xy, objects, t=-1, nabla='', function=''):
-    return field(xy_max, n_xy, objects, t=t, nabla=nabla, function=function, plane='xy')
+def static_field_2d(xy_max, objects, function, n_xy=20):
+    f_x, f_y, f_z = field(xy_max, n_xy, objects, function=function, plane='xy')
+    fp.field_lines(xy_max, f_x, f_y, objects)
 
 
-def fieldXZ(xy_max, n_xy, objects, t=-1, nabla='', function=''):
-    return field(xy_max, n_xy, objects, t=t, nabla=nabla, function=function, plane='xz')
+def static_field_3d(xyz_max, objects, function, n_xyz=6):
+    f_x, f_y, f_z = field3d(xyz_max, n_xyz, objects, function=function)
+    fp.arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects=True)
 
 
-def fieldYZ(xy_max, n_xy, objects, t=-1, nabla='', function=''):
-    return field(xy_max, n_xy, objects, t=t, nabla=nabla, function=function, plane='yz')
+def dynamic_field(xy_max, t_max, object, function, n_xy=30, n_t=50, save=False):
+    objects = [object]
+    t = np.linspace(0, t_max, n_t)
+    for t_i in t:
+        if function == 'H':
+            plane = 'xy'
+        else:
+            plane = 'xz'
+        f_x, f_y, f_z = field(xy_max, n_xy, objects, t=t_i, function=function, plane=plane)
+        if function == 'E':
+            cfunc = f_z
+            fp.arrow_field(xy_max, f_x, f_z, cfunc=cfunc)
+        elif function == 'H':
+            cfunc = f_x * phi_unit(xy_max, n_xy)
+            fp.arrow_field(xy_max, f_x, f_y, cfunc=cfunc)
+        else:
+            cfunc = f_x * radius_unit(xy_max, n_xy)
+            fp.arrow_field(xy_max, f_x, f_z, cfunc=cfunc)
+        fa.save_frame(function)
+    if save:
+        fa.save_anim(function)
+    else:
+        fa.render_anim(function)
 
 
 def field(xy_max, n_xy, objects, t=-1, nabla='', function='', plane='xy'):

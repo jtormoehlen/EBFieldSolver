@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import FieldAnimation as anim
+import FieldAnimation as fa
 import mpl_toolkits.mplot3d.art3d as art3d
 import FieldCalculator as fc
 from mpl_toolkits import mplot3d
@@ -24,7 +24,7 @@ def arrow_field(xy_max, f_x, f_y, normalize=False, cfunc=None, show=False):
 
 
 def arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects=True):
-    anim.aspect_ratio(False)
+    fa.aspect_ratio(False)
     x, y, z = fc.mesh3d(xyz_max, len(f_x))
     plt.subplot(projection='3d', label='none')
     plt.quiver(x, y, z, f_x, f_y, f_z, length=xyz_max / len(f_x), normalize=True)
@@ -33,8 +33,9 @@ def arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects=True):
         ring = Circle((0, 0), 1, edgecolor='black', fill=False)
         plt.gca().add_patch(ring)
         art3d.pathpatch_2d_to_3d(ring, z=0, zdir="x")
-        plt.quiver(0., 0., 0., 0., 0., 1., color='red')
-        plt.quiver(0., 0., 1., 0., -1., 0., color='green')
+        plt.quiver(0., 0., 0., 0., 1., 0., color='red')
+        plt.quiver(0., 1., 0., 0., 0., 1., color='green')
+    plt.show()
 
 
 def potential_lines(xy_max, f_xy, field_objects=(None,), show=False):
@@ -54,7 +55,7 @@ def field_lines(xy_max, f_x, f_y, field_objects=(None,), show=True):
 
 
 def plot(show):
-    anim.render_frame() if show else 0
+    fa.render_frame() if show else 0
 
 
 def draw(field_objects):

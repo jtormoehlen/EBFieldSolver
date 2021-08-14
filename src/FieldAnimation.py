@@ -11,7 +11,7 @@ def render_frame(x_label='$x$', y_label='$y$', back_color='white', show=True, as
     # plt.rcParams["figure.figsize"] = (5, 5)
     plt.gca().set_facecolor(back_color)
     aspect_ratio(aspect)
-    plt.figure().show() if show else 0
+    plt.show() if show else 0
 
 
 def aspect_ratio(aspect=True):
@@ -21,23 +21,24 @@ def aspect_ratio(aspect=True):
         plt.gca().set_aspect('auto')
 
 
-def render_anim(location, t):
-    fig = plt.figure()
+def render_anim(location):
+    fig = plt.gcf()
     frames = []
-    for i in range(0, len(t), 1):
+    for i in range(0, 50, 1):
         path = 'img/temporary/' + location + str(i) + '.png'
         img = mpimg.imread(path)
         frame = plt.imshow(img, animated=True)
+        plt.gca().axis('off')
         frames.append([frame])
         os.remove(path)
 
-    animation.ArtistAnimation(fig, frames, interval=50, blit=True, repeat_delay=50)
+    animation.ArtistAnimation(fig, frames, interval=50, blit=True)
     plt.show()
 
 
-def save_anim(location, t):
+def save_anim(location):
     with iio.get_writer('img/dynamic/' + location + '.gif', mode='I') as writer:
-        for i in range(0, len(t), 1):
+        for i in range(0, 50, 1):
             s = 'img/temporary/' + location + str(i) + '.png'
             image = iio.imread(s)
             writer.append_data(image)
@@ -48,7 +49,7 @@ def save_anim(location, t):
 def save_frame(location):
     render_frame(show=False)
     location = 'temporary/' + location
-    for i in range(0, 100, 1):
+    for i in range(0, 50, 1):
         path = 'img/' + location + str(i) + '.png'
         if not os.path.exists(path):
             plt.savefig(path)

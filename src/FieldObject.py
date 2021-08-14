@@ -63,9 +63,9 @@ class Antenna:
         self.T = 1. / frequency
         self.power = power
         self.omega = 2. * np.pi * self.frequency
-        self.wavelength = c / self.frequency
-        self.k_0 = (2. * np.pi) / self.wavelength
-        self.L = L * self.wavelength
+        self.lambda_0 = c / self.frequency
+        self.k_0 = (2. * np.pi) / self.lambda_0
+        self.L = L * self.lambda_0
         self.h = L / 2.
         self.I_0 = power / 1.e3
         self.p_z = np.sqrt(12. * np.pi * c * self.power / (mu_0 * self.omega ** 4))
