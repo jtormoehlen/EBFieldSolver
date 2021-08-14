@@ -1,3 +1,4 @@
+import numpy as np
 from scipy.misc import derivative
 
 
@@ -37,3 +38,14 @@ def curl(x, y, z, f):
     dz = dfy_dx - dfx_dy
 
     return [dx, dy, dz]
+
+
+def spherical_to_cartesian(x, y, z, v):
+    r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+    theta = np.arccos(z / r)
+    phi = np.arctan2(y, x)
+
+    m1 = [np.sin(theta) * np.cos(phi), np.cos(theta) * np.cos(phi), -np.sin(phi)]
+    m2 = [np.sin(theta) * np.sin(phi), np.cos(theta) * np.sin(phi), np.cos(phi)]
+    m3 = [np.cos(theta), -np.sin(theta), 0]
+    return [np.dot(m1, v), np.dot(m2, v), np.dot(m3, v)]

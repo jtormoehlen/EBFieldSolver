@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
-from FieldUtil import spherical_to_cartesian
+from FieldOperator import spherical_to_cartesian
 
 epsilon_0 = 8.85e-12
 mu_0 = 4. * np.pi * 10.e-7
@@ -10,8 +10,8 @@ Z_0 = np.sqrt(mu_0 / epsilon_0)
 
 
 class Charge:
-    E_const = 1 / (4 * np.pi * epsilon_0)
-    B_const = (mu_0 / (4 * np.pi))
+    e_const = 1 / (4 * np.pi * epsilon_0)
+    m_const = (mu_0 / (4 * np.pi))
 
     def __init__(self, q, r0_x, r0_y, r0_z=0, v_x=0, v_y=0, v_z=0):
         self.q = q
@@ -33,26 +33,26 @@ class Charge:
     def E(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        E = self.E_const * self.q * ((r - self.r0) / r_r0_norm ** 3)
+        E = self.e_const * self.q * ((r - self.r0) / r_r0_norm ** 3)
         return E
 
     def phi(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        phi = self.E_const * self.q * (1 / r_r0_norm) * np.array([1., 0., 0.])
+        phi = self.e_const * self.q * (1 / r_r0_norm) * np.array([1., 0., 0.])
         return phi
 
     def B(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
         v_cross_r_r0 = np.cross(self.v, r - self.r0)
-        B = self.B_const * ((self.q * v_cross_r_r0) / (r_r0_norm ** 3))
+        B = self.m_const * ((self.q * v_cross_r_r0) / (r_r0_norm ** 3))
         return B
 
     def A(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        A = self.B_const * ((self.q * self.v) / r_r0_norm)
+        A = self.m_const * ((self.q * self.v) / r_r0_norm)
         return A
 
 
@@ -69,6 +69,7 @@ class Antenna:
         self.h = L / 2.
         self.I_0 = power / 1.e3
         self.p_z = np.sqrt(12. * np.pi * c * self.power / (mu_0 * self.omega ** 4))
+        self.factor = 0.
 
     def form(self):
         ellipse = patch.Ellipse((self.r0[0], self.r0[1]), 0.1, 0.2, color='grey', alpha=0.5)
@@ -98,15 +99,16 @@ class Antenna:
             r_dot_p = np.dot(r, p)
             r_dot_rdotp = np.dot(3 * r, r_dot_p) - p
 
-            c1 = (self.omega ** 3 / (4. * np.pi * epsilon_0 * c ** 3))
-            c2 = (self.omega * r_norm) / c
-            c3 = 1. / c2
-            c4 = 1. / c2 ** 3
-            c5 = 1.j / c2 ** 2
-            c6 = 1.j * (c2 - (self.omega * t))
-            E = c1 * ((rcrossp_cross_r * c3) + (r_dot_rdotp * (c4 - c5))) * np.exp(c6)
+            const = (self.omega ** 3 / (4. * np.pi * epsilon_0 * c ** 3))
+            rho = (self.omega * r_norm) / c
+            far = 1. / rho
+            near_3 = 1. / rho ** 3
+            near_2 = 1.j / rho ** 2
+            e_pow = 1.j * (rho - (self.omega * t))
+            E = const * ((rcrossp_cross_r * far) + (r_dot_rdotp * (near_3 - near_2))) * np.exp(e_pow)
             return E
         else:
+            self.factor = 5.
             E_theta = Z_0 * self.far_field(x, y, z, t)
             E = np.array([0., E_theta, 0.])
             E_x, E_y, E_z = spherical_to_cartesian(x, y, z, E)
@@ -120,14 +122,15 @@ class Antenna:
             r = r / r_norm
             r_cross_p = np.cross(r, p)
 
-            c1 = (self.omega ** 3 / (4. * np.pi * c ** 2))
-            c2 = (self.omega * r_norm) / c
-            c3 = 1. / c2
-            c4 = 1.j / c2 ** 2
-            c5 = 1.j * (c2 - (self.omega * t))
-            H = c1 * r_cross_p * (c3 + c4) * np.exp(c5)
+            const = (self.omega ** 3 / (4. * np.pi * c ** 2))
+            rho = (self.omega * r_norm) / c
+            far = 1. / rho
+            near_2 = 1.j / rho ** 2
+            e_pow = 1.j * (rho - (self.omega * t))
+            H = const * r_cross_p * (far + near_2) * np.exp(e_pow)
             return H
         else:
+            self.factor = 1.e-2
             H_phi = self.far_field(x, y, z, t)
             H = np.array([0., 0., H_phi])
             H_x, H_y, H_z = spherical_to_cartesian(x, y, z, H)
@@ -136,4 +139,8 @@ class Antenna:
     def S(self, x, y, z, t):
         E = self.E(x, y, z, t)
         H = self.H(x, y, z, t)
+        self.factor = 1.e-3
         return np.cross(E, H)
+
+    def get_factor(self):
+        return self.factor

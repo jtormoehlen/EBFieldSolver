@@ -1,7 +1,6 @@
-import sys
 import numpy as np
-from FieldAnimation import show_frame
-from FieldUtil import field, field_lines, potential_lines, arrow_field, forms, field3d, arrow_field3d
+from FieldCalculator import fieldXY, fieldXZ, field3d
+from FieldPlot import field_lines, potential_lines, arrow_field3d
 from FieldObject import Charge
 
 # quadrupole
@@ -24,21 +23,15 @@ for angle in np.linspace(0, 2. * np.pi, 36):
 if __name__ == "__main__":
     xy_max = 5.
     n_xy = 20.
-    phi, phiy, phiz = field(xy_max, n_xy, objects=quadrupole, function='phi')
-    Ex, Ey, Ez = field(xy_max, n_xy, objects=quadrupole, nabla='gradient', function='phi')
-    arrow_field(xy_max, n_xy, -Ex, -Ey, normalize=True)
-    potential_lines(xy_max, n_xy, phi)
-    forms(quadrupole)
-    show_frame()
+    phi, phiy, phiz = fieldXY(xy_max, n_xy, quadrupole, function='phi')
+    Ex, Ey, Ez = fieldXY(xy_max, n_xy, quadrupole, nabla='gradient', function='phi')
+    potential_lines(xy_max, phi)
+    field_lines(xy_max, -Ex, -Ey, quadrupole)
 
-    Bx, By, Bz = field(xy_max, n_xy, plane='xz', objects=loop, function='B')
-    arrow_field(xy_max, n_xy, Bx, Bz, normalize=True)
-    forms(loop)
-    show_frame(y_label='$z$')
+    Bx, B, Bz = fieldXZ(xy_max, n_xy, loop, function='B')
+    field_lines(xy_max, Bx, Bz, loop)
 
     xyz_max = 2.
     n_xyz = 6.
-    Bx, By, Bz = field3d(xyz_max, n_xyz, objects=loop, function='B')
-    arrow_field3d(xyz_max, n_xyz, Bx, By, Bz)
-
-    # sys.exit(0)
+    Bx, By, Bz = field3d(xyz_max, n_xyz, loop, function='B')
+    arrow_field3d(xyz_max, Bx, By, Bz)

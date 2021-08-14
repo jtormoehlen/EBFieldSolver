@@ -1,16 +1,18 @@
 import sys
-import numpy as np
-from FieldAnimation import show_frame, save_frame, save_anim
-from FieldObject import Antenna
-from FieldUtil import field, arrow_field, phi_unit, field_round, radius_unit
 
-r0 = [0., 0., 0.]
-frequency = 500.E6
+import numpy as np
+from FieldAnimation import save_frame, save_anim
+from FieldObject import Antenna
+from FieldCalculator import fieldXY, fieldXZ, phi_unit, field_round, radius_unit
+from FieldPlot import arrow_field
+
+# antenna with f=500MHz and P=1W
+frequency = 500.e6
 power = 1.
 
 antenna = Antenna(frequency, 1., 1./2.)
-antennae = []
-antennae.append(antenna)
+antennas = []
+antennas.append(antenna)
 
 
 if __name__ == "__main__":
@@ -21,36 +23,24 @@ if __name__ == "__main__":
     t_max = antenna.T
     t = np.linspace(0, t_max, n_t)
 
-    index = 0
     for t_i in t:
-        Ex, Ey, Ez = field(xyz_max, n_xyz, t=t_i, plane='xz', objects=antennae, function='E')
-        Hx, Hy, Hz = field(xyz_max, n_xyz, t=t_i, plane='xy', objects=antennae, function='H')
-        Sx, Sy, Sz = field(xyz_max, n_xyz, t=t_i, plane='xz', objects=antennae, function='S')
+        Ex, Ey, Ez = fieldXZ(xyz_max, n_xyz, antennas, t=t_i, function='E')
+        arrow_field(xyz_max, Ex, Ez, cfunc=Ez)
+        save_frame('E')
 
-        field_round(Ex, Ez, xyz_max, n_xyz, 5.)
-        arrow_field(xyz_max, n_xyz, Ex, Ez,
-                    cfunc=Ez)
-        show_frame(y_label='$z$', location='E')
-        save_frame(t=t, location='E', index=index)
-
+        Hx, Hy, Hz = fieldXY(xyz_max, n_xyz, antennas, t=t_i, function='H')
         e_phi = phi_unit(xyz_max, n_xyz)
-        field_round(Hx, Hy, xyz_max, n_xyz, 1.e-2)
-        arrow_field(xyz_max, n_xyz, Hx, Hy,
-                    cfunc=Hx * e_phi)
-        show_frame(location='H')
-        save_frame(t=t, location='H', index=index)
+        arrow_field(xyz_max, Hx, Hy, cfunc=Hx * e_phi)
+        save_frame('H')
 
+        Sx, Sy, Sz = fieldXZ(xyz_max, n_xyz, antennas, t=t_i, function='S')
         e_r = radius_unit(xyz_max, n_xyz)
-        field_round(Sx, Sz, xyz_max, n_xyz, 1.e-3)
-        arrow_field(xyz_max, n_xyz, Sx, Sz,
-                    cfunc=Sx * e_r)
-        show_frame(y_label='$z$', location='S')
-        save_frame(t=t, location='S', index=index)
+        arrow_field(xyz_max, Sx, Sz, cfunc=Sx * e_r)
+        save_frame('S')
 
-        index += 1
-
-    save_anim(t=t, location='E')
-    save_anim(t=t, location='H')
-    save_anim(t=t, location='S')
+    # render_anim('E', t)
+    save_anim('E', t)
+    save_anim('H', t)
+    save_anim('S', t)
 
     sys.exit(0)
