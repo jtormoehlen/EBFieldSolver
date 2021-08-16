@@ -1,10 +1,51 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import FieldAnimation as fa
-import mpl_toolkits.mplot3d.art3d as art3d
 import FieldCalculator as fc
+import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits import mplot3d
 from matplotlib.patches import Circle, PathPatch
+
+
+def static_field_2d(xy_max, objects, function, nabla='', n_xy=50):
+    if nabla != '':
+        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function, plane='xy')
+        potential_lines(xy_max, np.sqrt(f_x ** 2 + f_y ** 2 + f_z ** 2))
+    df_x, df_y, df_z = fc.field(xy_max, n_xy, objects, nabla=nabla, function=function, plane='xy')
+    if function == 'phi' or function == 'A':
+        potential_lines(xy_max, np.sqrt(df_x ** 2 + df_y ** 2 + df_z ** 2), objects, show=True)
+    else:
+        field_lines(xy_max, df_x, df_y, objects)
+
+
+def static_field_3d(xyz_max, objects, function, n_xyz=6):
+    f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
+    arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects=True)
+
+
+def dynamic_field(xy_max, t_max, object, function, n_xy=30, n_t=50, save=False):
+    objects = [object]
+    t = np.linspace(0, t_max, n_t)
+    for t_i in t:
+        if function == 'H':
+            plane = 'xy'
+        else:
+            plane = 'xz'
+        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function, plane=plane)
+        if function == 'E':
+            cfunc = f_z
+            arrow_field(xy_max, f_x, f_z, cfunc=cfunc)
+        elif function == 'H':
+            cfunc = f_x * fc.phi_unit(xy_max, n_xy)
+            arrow_field(xy_max, f_x, f_y, cfunc=cfunc)
+        else:
+            cfunc = f_x * fc.radius_unit(xy_max, n_xy)
+            arrow_field(xy_max, f_x, f_z, cfunc=cfunc)
+        fa.save_frame(function)
+    if save:
+        fa.save_anim(function)
+    else:
+        fa.render_anim(function)
 
 
 def arrow_field(xy_max, f_x, f_y, normalize=False, cfunc=None, show=False):

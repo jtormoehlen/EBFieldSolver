@@ -1,12 +1,12 @@
 import numpy as np
 from FieldObject import Antenna
-from FieldCalculator import dynamic_field
+from FieldPlot import dynamic_field
 
 # antenna with f=500MHz and P=1W
 frequency = 500.e6
 power = 1.
-L_factor = 3./2.
-antenna = Antenna(frequency, power, L_factor)
+l = 3./2.
+antenna = Antenna(frequency, power, l)
 
 
 if __name__ == "__main__":

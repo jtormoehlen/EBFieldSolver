@@ -53,6 +53,6 @@ def save_frame(location):
         path = 'img/' + location + str(i) + '.png'
         if not os.path.exists(path):
             plt.savefig(path)
-            print('Saving ./' + location + '.png#' + str(i + 1))
+            print('Loading... ' + str(round(((i + 1) / 50.) * 100.)) + '%')
             break
     plt.cla()
