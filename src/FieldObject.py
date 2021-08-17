@@ -10,8 +10,8 @@ Z_0 = np.sqrt(mu_0 / epsilon_0)
 
 
 class Charge:
-    e_const = 1 / (4 * np.pi * epsilon_0)
-    m_const = (mu_0 / (4 * np.pi))
+    epsilon = 1. / (4. * np.pi * epsilon_0)
+    mu = (mu_0 / (4. * np.pi))
 
     def __init__(self, q, r0_x, r0_y, r0_z=0, v_x=0, v_y=0, v_z=0):
         self.q = q
@@ -33,43 +33,41 @@ class Charge:
     def E(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        E = self.e_const * self.q * ((r - self.r0) / r_r0_norm ** 3)
+        E = self.epsilon * self.q * ((r - self.r0) / r_r0_norm ** 3)
         return E
 
     def phi(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        phi = self.e_const * self.q * (1 / r_r0_norm) * np.array([1., 0., 0.])
+        phi = self.epsilon * self.q * (1 / r_r0_norm) * np.array([1., 0., 0.])
         return phi
 
     def B(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
         v_cross_r_r0 = np.cross(self.v, r - self.r0)
-        B = self.m_const * ((self.q * v_cross_r_r0) / (r_r0_norm ** 3))
+        B = self.mu * ((self.q * v_cross_r_r0) / (r_r0_norm ** 3))
         return B
 
     def A(self, x, y, z):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        A = self.m_const * ((self.q * self.v) / r_r0_norm)
+        A = self.mu * ((self.q * self.v) / r_r0_norm)
         return A
 
 
 class Antenna:
-    def __init__(self, frequency, power, L=0.):
-        self.r0 = np.array([0., 0., 0.])
-        self.frequency = frequency
+    def __init__(self, frequency, power, l=0., x=0., y=0., z=0.):
+        self.r0 = np.array([x, y, z])
         self.T = 1. / frequency
-        self.power = power
-        self.omega = 2. * np.pi * self.frequency
-        self.lambda_0 = c / self.frequency
+        self.omega = 2. * np.pi * frequency
+        self.lambda_0 = c / frequency
         self.k_0 = (2. * np.pi) / self.lambda_0
-        self.L = L * self.lambda_0
-        self.h = L / 2.
+        self.L = l * self.lambda_0
+        self.h = l / 2.
         self.I_0 = power / 1.e3
-        self.p_z = np.sqrt(12. * np.pi * c * self.power / (mu_0 * self.omega ** 4))
-        self.factor = 0.
+        self.p_z = np.sqrt(12. * np.pi * c * power / (mu_0 * self.omega ** 4))
+        self.factor = .0
 
     def form(self):
         ellipse = patch.Ellipse((self.r0[0], self.r0[1]), 0.1, 0.2, color='grey', alpha=0.5)

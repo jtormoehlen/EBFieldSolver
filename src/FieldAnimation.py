@@ -8,51 +8,50 @@ from matplotlib import animation
 def render_frame(x_label='$x$', y_label='$y$', back_color='white', show=True, aspect=True):
     plt.xlabel(r'' + x_label + '')
     plt.ylabel(r'' + y_label + '')
-    # plt.rcParams["figure.figsize"] = (5, 5)
     plt.gca().set_facecolor(back_color)
-    aspect_ratio(aspect)
+    plt.gca().set_aspect('equal') if aspect else plt.gca().set_aspect('auto')
     plt.show() if show else 0
-
-
-def aspect_ratio(aspect=True):
-    if aspect:
-        plt.gca().set_aspect('equal')
-    else:
-        plt.gca().set_aspect('auto')
 
 
 def render_anim(location):
     fig = plt.gcf()
     frames = []
+    dpath = 'img/temporary'
+    os.makedirs(dpath) if not os.path.isdir(dpath) else 0
     for i in range(0, 50, 1):
-        path = 'img/temporary/' + location + str(i) + '.png'
-        img = mpimg.imread(path)
+        fpath = dpath + '/' + location + str(i) + '.png'
+        img = mpimg.imread(fpath)
+        # plt.rcParams["figure.figsize"] = (10, 10)
         frame = plt.imshow(img, animated=True)
         plt.gca().axis('off')
         frames.append([frame])
-        os.remove(path)
-
+        os.remove(fpath)
     animation.ArtistAnimation(fig, frames, interval=50, blit=True)
     plt.show()
 
 
 def save_anim(location):
-    with iio.get_writer('img/dynamic/' + location + '.gif', mode='I') as writer:
+    dpath = 'img/dynamic'
+    os.makedirs(dpath) if not os.path.isdir(dpath) else 0
+    with iio.get_writer(dpath + '/' + location + '.gif', mode='I') as writer:
         for i in range(0, 50, 1):
-            s = 'img/temporary/' + location + str(i) + '.png'
-            image = iio.imread(s)
+            fpath = 'img/temporary/' + location + str(i) + '.png'
+            image = iio.imread(fpath)
             writer.append_data(image)
-            os.remove(s)
-    print('Saving ./dynamic/' + str(location) + '.gif')
+            os.remove(fpath)
+    print('Saving ' + os.getcwd() + '/img/dynamic/' + str(location) + '.gif')
 
 
 def save_frame(location):
     render_frame(show=False)
-    location = 'temporary/' + location
+    ftype = location
+    dpath = 'img/temporary'
+    location = 'img/temporary/' + location
+    os.makedirs(dpath) if not os.path.isdir(dpath) else 0
     for i in range(0, 50, 1):
-        path = 'img/' + location + str(i) + '.png'
-        if not os.path.exists(path):
-            plt.savefig(path)
-            print('Loading... ' + str(round(((i + 1) / 50.) * 100.)) + '%')
+        fpath = location + str(i) + '.png'
+        if not os.path.exists(fpath):
+            plt.savefig(fpath)
+            print('Loading ' + ftype + ': ' + str(round(((i + 1) / 50.) * 100.)) + '%')
             break
     plt.cla()

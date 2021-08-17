@@ -1,9 +1,9 @@
 import numpy as np
 from FieldObject import Charge
-from FieldPlot import static_field_2d, static_field_3d
+from FieldPlot import static_field, static_field3d
 
 # charge and its position
-q = x = y = 1.0
+q = x = y = 1.
 # quadrupole
 quadrupole = []
 quadrupole.append(Charge(-q, -x, y))
@@ -12,11 +12,11 @@ quadrupole.append(Charge(q, -x, -y))
 quadrupole.append(Charge(-q, x, -y))
 
 # charge and x-coords of position and velocity
-q = 1.0
-r_x = v_x = 0.
+q = 1.
+r_x = v_x = .0
 # conductor loop
 loop = []
-for angle in np.linspace(0, 2. * np.pi, 32, endpoint=False):
+for angle in np.linspace(.0, 2. * np.pi, 32, endpoint=False):
     r_y = np.cos(angle)
     r_z = np.sin(angle)
     v_y = -np.sin(angle)
@@ -26,8 +26,8 @@ for angle in np.linspace(0, 2. * np.pi, 32, endpoint=False):
 
 if __name__ == "__main__":
     xy_max = 5.
-    static_field_2d(xy_max, quadrupole, function='E')
-    static_field_2d(xy_max, loop, function='B')
+    static_field(xy_max, quadrupole, function='E')
+    static_field(xy_max, loop, function='B')
 
     xyz_max = 2.
-    static_field_3d(xyz_max, loop, function='B')
+    static_field3d(xyz_max, loop, function='B')
