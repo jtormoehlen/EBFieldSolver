@@ -67,8 +67,7 @@ def arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects=True, show=True):
     plt.subplot(projection='3d', label='none')
     plt.gca().set_zlabel(r'$z$')
     plt.quiver(x, y, z, f_x, f_y, f_z, length=xyz_max / len(f_x), normalize=True)
-    if field_objects:
-        draw_object()
+    draw_object() if field_objects else 0
     fa.render_frame(aspect=False) if show else 0
 
 
