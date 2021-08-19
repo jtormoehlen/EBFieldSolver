@@ -15,6 +15,6 @@ if __name__ == "__main__":
     # T -> period of antenna oscillation
     t_max = antenna.T
 
-    dynamic_field(xyz_max, t_max, antenna, function='E', save=True)
-    dynamic_field(xyz_max, t_max, antenna, function='H', save=True)
-    dynamic_field(xyz_max, t_max, antenna, function='S', save=True)
+    dynamic_field(xyz_max, t_max, antenna, function='E')
+    dynamic_field(xyz_max, t_max, antenna, function='H')
+    dynamic_field(xyz_max, t_max, antenna, function='S')

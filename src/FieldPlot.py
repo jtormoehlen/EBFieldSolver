@@ -2,37 +2,53 @@ import numpy as np
 import matplotlib.pyplot as plt
 import FieldAnimation as fa
 import FieldCalculator as fc
+import FieldOperator as fo
 import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits import mplot3d
 from matplotlib.patches import Circle, PathPatch
 
 
-def static_field(xy_max, objects, function, nabla='', n_xy=50):
-    if nabla != '':
-        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function, plane='xy')
-        potential_lines(xy_max, np.sqrt(f_x ** 2 + f_y ** 2 + f_z ** 2))
-    df_x, df_y, df_z = fc.field(xy_max, n_xy, objects, nabla=nabla, function=function, plane='xy')
-    if function == 'phi' or function == 'A':
-        potential_lines(xy_max, np.sqrt(df_x ** 2 + df_y ** 2 + df_z ** 2), objects, show=True)
+def static_field(xy_max, objects, function, nabla='', n_xy=20):
+    if nabla == 'rot':
+        f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, function=function)
+        f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
+        z_plane = round(len(f_z) / 2)
+        arrow_field(xy_max, f_x[:, :, z_plane], f_y[:, :, z_plane], normalize=True, show=True)
+    elif nabla == 'grad':
+        f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, function=function)
+        f_x, f_y, f_z = fo.grad(f_x)
+        z_plane = round(len(f_z) / 2)
+        arrow_field(xy_max, f_x[:, :, z_plane], f_y[:, :, z_plane], normalize=True, show=True)
     else:
-        field_lines(xy_max, df_x, df_y, objects)
+        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
+        arrow_field(xy_max, f_x, f_y, normalize=True, show=True)
 
 
-def static_field3d(xyz_max, objects, function, n_xyz=6):
-    f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
-    arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects=True)
+def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
+    if nabla == 'rot':
+        f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
+        f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
+        arrow_field3d(xyz_max, f_x, f_y, f_z)
+    elif nabla == 'grad':
+        f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
+        f_x, f_y, f_z = fo.grad(f_x)
+        arrow_field3d(xyz_max, f_x, f_y, f_z)
+    else:
+        f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
+        arrow_field3d(xyz_max, f_x, f_y, f_z)
 
 
-def dynamic_field(xy_max, t_max, object, function, n_xy=30, save=False):
-    objects = [object]
+def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
+    if not isinstance(objects, list):
+        objects = [objects]
     n_t = 50
-    t = np.linspace(0, t_max, n_t)
+    t = np.linspace(0., t_max, n_t)
     for t_i in t:
         if function == 'H':
-            plane = 'xy'
+            xz = False
         else:
-            plane = 'xz'
-        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function, plane=plane)
+            xz = True
+        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function)
         if function == 'E':
             cfunc = f_z
             arrow_field(xy_max, f_x, f_z, cfunc=cfunc)

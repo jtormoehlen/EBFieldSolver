@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
-from FieldOperator import spherical_to_cartesian
+import FieldOperator as fo
 
 epsilon_0 = 8.85e-12
 mu_0 = 4. * np.pi * 10.e-7
@@ -30,26 +30,26 @@ class Charge:
             plt.gca().add_patch(circle)
             # plt.scatter(self.r0[0], self.r0[2], self.R*10, 'black', isymbol, zorder=2)
 
-    def E(self, x, y, z):
+    def E(self, x, y, z, t=0):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
         E = self.epsilon * self.q * ((r - self.r0) / r_r0_norm ** 3)
         return E
 
-    def phi(self, x, y, z):
+    def phi(self, x, y, z, t=0):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
         phi = self.epsilon * self.q * (1 / r_r0_norm) * np.array([1., 0., 0.])
         return phi
 
-    def B(self, x, y, z):
+    def B(self, x, y, z, t=0):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
         v_cross_r_r0 = np.cross(self.v, r - self.r0)
         B = self.mu * ((self.q * v_cross_r_r0) / (r_r0_norm ** 3))
         return B
 
-    def A(self, x, y, z):
+    def A(self, x, y, z, t=0):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
         A = self.mu * ((self.q * self.v) / r_r0_norm)
@@ -69,13 +69,13 @@ class Antenna:
         self.p_z = np.sqrt(12. * np.pi * c * power / (mu_0 * self.omega ** 4))
         self.factor = .0
 
-    def form(self):
-        ellipse = patch.Ellipse((self.r0[0], self.r0[1]), 0.1, 0.2, color='grey', alpha=0.5)
-        plt.gca().add_patch(ellipse)
-
     def p(self, t):
         e_z = np.array([0., 0., 1.])
         p = self.p_z * np.exp(-1j * self.omega * t) * e_z
+        # P = 1.
+        # d = self.lambda_0 * 0.5
+        # I0 = np.sqrt((48. * np.pi * P) / (Z_0 * (self.k_0 * d) ** 2))
+        # p = ((1j * I0 * d) / (2. * self.omega)) * e_z
         return p
 
     def far_field(self, x, y, z, t):
@@ -110,8 +110,9 @@ class Antenna:
             self.factor = 5.
             E_theta = Z_0 * self.far_field(x, y, z, t)
             E = np.array([0., E_theta, 0.])
-            E_x, E_y, E_z = spherical_to_cartesian(x, y, z, E)
-            return [E_x, E_y, E_z]
+            E_x, E_y, E_z = fo.spherical_to_cartesian(x, y, z, E)
+            return np.array([E_x, E_y, E_z])
+
 
     def H(self, x, y, z, t):
         if self.L == 0:
@@ -133,8 +134,19 @@ class Antenna:
             self.factor = 1.e-2
             H_phi = self.far_field(x, y, z, t)
             H = np.array([0., 0., H_phi])
-            H_x, H_y, H_z = spherical_to_cartesian(x, y, z, H)
-            return [H_x, H_y, H_z]
+            H_x, H_y, H_z = fo.spherical_to_cartesian(x, y, z, H)
+            return np.array([H_x, H_y, H_z])
+
+    def A(self, x, y, z, t):
+        self.factor = 1.e-2
+        r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        theta = np.arccos(z / r)
+        f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
+        e_t = np.exp(1.j * (self.k_0 * r - self.omega * t))
+        I = self.I_0 / np.sin(self.k_0 * self.h)
+        A_z = I * (e_t / (2 * np.pi * r)) * f_theta_phi
+        A = np.array([0., 0., A_z])
+        return A
 
     def S(self, x, y, z, t):
         E = self.E(x, y, z, t)
