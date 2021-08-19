@@ -26,8 +26,8 @@ for angle in np.linspace(.0, 2. * np.pi, 32, endpoint=False):
 
 if __name__ == "__main__":
     xy_max = 5.
-    static_field(xy_max, quadrupole, function='phi', nabla='grad')
-    static_field(xy_max, loop, function='A', nabla='rot')
+    static_field(xy_max, quadrupole, function='E')
+    static_field(xy_max, loop, function='B')
 
     xyz_max = 2.
-    static_field3d(xyz_max, loop, function='B')
+    static_field3d(xyz_max, loop, function='A', nabla='rot')

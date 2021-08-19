@@ -6,7 +6,7 @@ from FieldPlot import dynamic_field
 frequency = 500.e6
 power = 2.
 length = 1./2.
-antenna = Antenna(frequency, power, length)
+antenna = Antenna(frequency, power)
 
 
 if __name__ == "__main__":

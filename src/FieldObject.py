@@ -113,7 +113,6 @@ class Antenna:
             E_x, E_y, E_z = fo.spherical_to_cartesian(x, y, z, E)
             return np.array([E_x, E_y, E_z])
 
-
     def H(self, x, y, z, t):
         if self.L == 0:
             self.factor = 0.5
