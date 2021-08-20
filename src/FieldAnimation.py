@@ -52,6 +52,8 @@ def save_frame(location):
         fpath = location + str(i) + '.png'
         if not os.path.exists(fpath):
             plt.savefig(fpath)
-            print('Loading ' + ftype + ': ' + str(round(((i + 1) / 50.) * 100.)) + '%')
+            progress = round(((i + 1) / 50.) * 100.)
+            if progress % 10 == 0:
+                print('Loading ' + ftype + ': ' + str(progress) + '%')
             break
     plt.cla()

@@ -20,7 +20,7 @@ def static_field(xy_max, objects, function, nabla='', n_xy=20):
         f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, function=function)
         df_x, df_y, df_z = fo.grad(f_x)
         z_plane = round(len(f_z) / 2)
-        arrow_field(xy_max, df_x[:, :, z_plane], df_y[:, :, z_plane], normalize=True, show=True)
+        arrow_field(xy_max, -df_x[:, :, z_plane], -df_y[:, :, z_plane], normalize=True, show=True)
     if nabla == '':
         f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function, indexing='xy')
         field_lines(xy_max, f_x, f_y, field_objects=objects)
@@ -32,11 +32,11 @@ def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
     if nabla == 'rot':
         f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
         f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
-        arrow_field3d(xyz_max, f_x, f_y, f_z)
+        arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects='loop')
     if nabla == 'grad':
         f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
         f_x, f_y, f_z = fo.grad(f_x)
-        arrow_field3d(xyz_max, f_x, f_y, f_z)
+        arrow_field3d(xyz_max, -f_x, -f_y, -f_z, field_objects='sphere')
     if nabla == '':
         f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
         arrow_field3d(xyz_max, f_x, f_y, f_z)
@@ -87,7 +87,7 @@ def arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects='loop', show=True):
     plt.subplot(projection='3d', label='none')
     plt.gca().set_zlabel(r'$z$')
     plt.quiver(x, y, z, f_x, f_y, f_z, length=xyz_max / len(f_x), normalize=True)
-    draw_loop() if field_objects == 'loop' else 0
+    draw_loop() if field_objects == 'loop' else draw_sphere()
     fa.render_frame(aspect=False) if show else 0
 
 
@@ -119,3 +119,11 @@ def draw_loop():
     art3d.pathpatch_2d_to_3d(ring, z=0, zdir="x")
     plt.quiver(0., 0., 0., 0., 1., 0., color='red')
     plt.quiver(0., 1., 0., 0., 0., 1., color='green')
+
+
+def draw_sphere():
+    u, v = np.mgrid[0:2 * np.pi:20j, 0:np.pi:10j]
+    x = np.cos(u) * np.sin(v)
+    y = np.sin(u) * np.sin(v)
+    z = np.cos(v)
+    plt.gca().plot_surface(x, y, z, color="r", alpha=.33)

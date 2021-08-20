@@ -31,3 +31,4 @@ if __name__ == "__main__":
 
     xyz_max = 2.
     static_field3d(xyz_max, loop, function='A', nabla='rot')
+    static_field3d(xy_max, Charge(q, .0, .0, .0), function='phi', nabla='grad')
