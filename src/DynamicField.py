@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from FieldObject import Antenna
 from FieldPlot import dynamic_field
@@ -6,7 +8,7 @@ from FieldPlot import dynamic_field
 frequency = 500.e6
 power = 2.
 length = 1./2.
-antenna = Antenna(frequency, power)
+antenna = Antenna(frequency, power, length)
 
 
 if __name__ == "__main__":
@@ -15,6 +17,8 @@ if __name__ == "__main__":
     # T -> period of antenna oscillation
     t_max = antenna.T
 
-    dynamic_field(xyz_max, t_max, antenna, function='E')
-    dynamic_field(xyz_max, t_max, antenna, function='H')
-    dynamic_field(xyz_max, t_max, antenna, function='S')
+    # dynamic_field(xyz_max, t_max, antenna, function='E')
+    dynamic_field(xyz_max, t_max, antenna, function='H', save=True)
+    # dynamic_field(xyz_max, t_max, antenna, function='S')
+
+sys.exit(0)

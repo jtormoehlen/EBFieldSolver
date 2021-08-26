@@ -53,10 +53,14 @@ def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
             cfunc = f_z
             arrow_field(xy_max, f_x, f_z, cfunc=cfunc, show=False)
         if function == 'H':
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function)
-            fc.field_round(f_x, f_y, xy_max, objects[0])
-            cfunc = f_x * fc.phi_unit(xy_max, n_xy)
-            arrow_field(xy_max, f_x, f_y, cfunc=cfunc, show=False)
+            f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, t=t_i, function='A')
+            y_plane = round(len(f_y) / 2)
+            f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
+            f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
+            x, y, z = fc.mesh3d(xy_max, n_xy)
+            fc.field_round(f_x[:, y_plane, :], f_z[:, y_plane, :], xy_max, objects[0])
+            plt.quiver(x[:, y_plane, :], z[:, y_plane, :],
+                       f_x[:, y_plane, :], f_z[:, y_plane, :], f_z[:, y_plane, :], cmap='cool')
         if function == 'S':
             f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function, xz_plane=True)
             fc.field_round(f_x, f_z, xy_max, objects[0])
@@ -79,6 +83,7 @@ def arrow_field(xy_max, f_x, f_y, normalize=False, cfunc=None, show=True):
     else:
         cfunc = cfunc
     plt.quiver(x, y, f_x / f_xy_norm, f_y / f_xy_norm, cfunc, cmap='cool')
+    plt.quiver(x, y, f_x, f_y)
     fa.render_frame() if show else 0
 
 

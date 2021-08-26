@@ -137,13 +137,9 @@ class Antenna:
             return np.array([H_x, H_y, H_z])
 
     def A(self, x, y, z, t):
-        self.factor = 1.e-2
-        r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
-        theta = np.arccos(z / r)
-        f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
-        e_t = np.exp(1.j * (self.k_0 * r - self.omega * t))
-        I = self.I_0 / np.sin(self.k_0 * self.h)
-        A_z = I * (e_t / (2 * np.pi * r)) * f_theta_phi
+        self.factor = .05
+        I = 1. / np.sin(self.k_0 * self.h)
+        A_z = ((Z_0 * I) / (self.k_0 ** 2)) * self.far_field(x, y, z, t)
         A = np.array([0., 0., A_z])
         return A
 
