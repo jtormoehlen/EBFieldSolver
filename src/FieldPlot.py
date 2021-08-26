@@ -48,19 +48,23 @@ def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
     t = np.linspace(0., t_max, 50)
     for t_i in t:
         if function == 'E':
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function, xz_plane=True)
-            fc.field_round(f_x, f_z, xy_max, objects[0])
-            cfunc = f_z
-            arrow_field(xy_max, f_x, f_z, cfunc=cfunc, show=False)
-        if function == 'H':
-            f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, t=t_i, function='A')
-            y_plane = round(len(f_y) / 2)
+            f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, t=t_i, function='A', nabla='rotrot')
+            plane = round(len(f_y) / 2)
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
             x, y, z = fc.mesh3d(xy_max, n_xy)
-            fc.field_round(f_x[:, y_plane, :], f_z[:, y_plane, :], xy_max, objects[0])
-            plt.quiver(x[:, y_plane, :], z[:, y_plane, :],
-                       f_x[:, y_plane, :], f_z[:, y_plane, :], f_z[:, y_plane, :], cmap='cool')
+            fc.field_round(f_x[:, plane, :], f_z[:, plane, :], xy_max, objects[0])
+            plt.quiver(x[:, plane, :], z[:, plane, :],
+                       f_x[:, plane, :], f_z[:, plane, :], f_z[:, plane, :], cmap='cool')
+        if function == 'H':
+            f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, t=t_i, function='A', nabla='rot')
+            plane = round(len(f_z) / 2)
+            f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
+            x, y, z = fc.mesh3d(xy_max, n_xy)
+            fc.field_round(f_x[:, :, plane], f_y[:, :, plane], xy_max, objects[0])
+            plt.quiver(x[:, :, plane], y[:, :, plane],
+                       f_x[:, :, plane], f_y[:, :, plane],
+                       f_x[:, :, plane] * fc.phi_unit(xy_max, n_xy), cmap='cool')
         if function == 'S':
             f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function, xz_plane=True)
             fc.field_round(f_x, f_z, xy_max, objects[0])

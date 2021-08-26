@@ -67,24 +67,12 @@ class Antenna:
         self.h = l / 2.
         self.I_0 = power / 1.e3
         self.p_z = np.sqrt(12. * np.pi * c * power / (mu_0 * self.omega ** 4))
-        self.factor = .0
+        self.factor = 1.
 
     def p(self, t):
         e_z = np.array([0., 0., 1.])
         p = self.p_z * np.exp(-1j * self.omega * t) * e_z
-        # P = 1.
-        # d = self.lambda_0 * 0.5
-        # I0 = np.sqrt((48. * np.pi * P) / (Z_0 * (self.k_0 * d) ** 2))
-        # p = ((1j * I0 * d) / (2. * self.omega)) * e_z
         return p
-
-    def far_field(self, x, y, z, t):
-        r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
-        theta = np.arccos(z / r)
-        f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta)
-        e_t = np.exp(1.j * (self.k_0 * r - self.omega * t))
-        field = 1.j * self.I_0 * (e_t / (2 * np.pi * r)) * f_theta_phi
-        return field
 
     def E(self, x, y, z, t):
         if self.L == 0:
@@ -104,14 +92,10 @@ class Antenna:
             near_3 = 1. / rho ** 3
             near_2 = 1.j / rho ** 2
             e_pow = 1.j * (rho - (self.omega * t))
-            E = const * ((rcrossp_cross_r * far) + (r_dot_rdotp * (near_3 - near_2))) * np.exp(e_pow)
-            return E
+            return const * ((rcrossp_cross_r * far) + (r_dot_rdotp * (near_3 - near_2))) * np.exp(e_pow)
         else:
-            self.factor = 5.
-            E_theta = Z_0 * self.far_field(x, y, z, t)
-            E = np.array([0., E_theta, 0.])
-            E_x, E_y, E_z = fo.spherical_to_cartesian(x, y, z, E)
-            return np.array([E_x, E_y, E_z])
+            self.factor = .05
+            return (1.j * Z_0) / (mu_0 * self.k_0)
 
     def H(self, x, y, z, t):
         if self.L == 0:
@@ -127,21 +111,24 @@ class Antenna:
             far = 1. / rho
             near_2 = 1.j / rho ** 2
             e_pow = 1.j * (rho - (self.omega * t))
-            H = const * r_cross_p * (far + near_2) * np.exp(e_pow)
-            return H
+            return const * r_cross_p * (far + near_2) * np.exp(e_pow)
         else:
-            self.factor = 1.e-2
-            H_phi = self.far_field(x, y, z, t)
-            H = np.array([0., 0., H_phi])
-            H_x, H_y, H_z = fo.spherical_to_cartesian(x, y, z, H)
-            return np.array([H_x, H_y, H_z])
+            self.factor = .005
+            return 1. / mu_0
 
-    def A(self, x, y, z, t):
-        self.factor = .05
-        I = 1. / np.sin(self.k_0 * self.h)
-        A_z = ((Z_0 * I) / (self.k_0 ** 2)) * self.far_field(x, y, z, t)
-        A = np.array([0., 0., A_z])
-        return A
+    def A(self, x, y, z, t, nabla=''):
+        r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        theta = np.arccos(z / r)
+        f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
+        e_t = np.exp(1.j * (self.k_0 * r - self.omega * t))
+        I = self.I_0 / np.sin(self.k_0 * self.h)
+        A_z = ((mu_0 * I * e_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
+        if nabla == 'rot':
+            return np.array([0., 0., A_z * self.H(x, y, z, t)])
+        elif nabla == 'rotrot':
+            return np.array([0., 0., A_z * self.E(x, y, z, t)])
+        else:
+            return np.array([0., 0., A_z])
 
     def S(self, x, y, z, t):
         E = self.E(x, y, z, t)

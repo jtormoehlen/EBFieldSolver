@@ -25,7 +25,7 @@ def mesh(xy_max, n_xy, indexing='ij'):
     return xx, yy
 
 
-def field3d(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij'):
+def field3d(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij', nabla=''):
     x, y, z = mesh3d(xyz_max, n_xyz, indexing=indexing)
     x_field, y_field, z_field = np.zeros_like(x), np.zeros_like(y), np.zeros_like(z)
     for object in objects:
@@ -33,7 +33,12 @@ def field3d(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij'):
             for j in range(len(y)):
                 for k in range(len(z)):
                     f = getattr(object, function)
-                    field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t))
+                    if nabla == 'rot':
+                        field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t, nabla))
+                    elif nabla == 'rotrot':
+                        field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t, nabla))
+                    else:
+                        field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t))
                     x_field[i][j][k] += field[0]
                     y_field[i][j][k] += field[1]
                     z_field[i][j][k] += field[2]
@@ -67,7 +72,8 @@ def radius_unit(xy_max, n_xy):
 
 
 def phi_unit(xy_max, n_xy):
-    x, y = mesh(xy_max, n_xy)
-    phi = np.arctan2(y, x)
+    x, y, z = mesh3d(xy_max, n_xy)
+    plane = round(n_xy / 2)
+    phi = np.arctan2(y[:, :, plane], x[:, :, plane])
     e_phi = np.array([-np.sin(phi), np.cos(phi)])
     return e_phi
