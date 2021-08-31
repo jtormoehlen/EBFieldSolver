@@ -17,10 +17,12 @@ r_x = v_x = .0
 # conductor loop
 loop = []
 for angle in np.linspace(.0, 2. * np.pi, 32, endpoint=False):
-    r_y = np.cos(angle)
-    r_z = np.sin(angle)
-    v_y = -np.sin(angle)
-    v_z = np.cos(angle)
+    a = .5
+    b = 1.
+    r_y = a * np.cos(angle)
+    r_z = b * np.sin(angle)
+    v_y = -a * np.sin(angle)
+    v_z = b * np.cos(angle)
     loop.append(Charge(1., r_x, r_y, r_z, v_x, v_y, v_z))
 
 

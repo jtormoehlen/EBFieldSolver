@@ -64,7 +64,7 @@ class Antenna:
         self.lambda_0 = c / frequency
         self.k_0 = (2. * np.pi) / self.lambda_0
         self.L = l * self.lambda_0
-        self.h = l / 2.
+        self.h = self.L / 2.
         self.I_0 = power / 1.e3
         self.p_z = np.sqrt(12. * np.pi * c * power / (mu_0 * self.omega ** 4))
         self.factor = 1.
@@ -94,7 +94,7 @@ class Antenna:
             e_pow = 1.j * (rho - (self.omega * t))
             return const * ((rcrossp_cross_r * far) + (r_dot_rdotp * (near_3 - near_2))) * np.exp(e_pow)
         else:
-            self.factor = .05
+            self.factor = .1
             return (1.j * Z_0) / (mu_0 * self.k_0)
 
     def H(self, x, y, z, t):

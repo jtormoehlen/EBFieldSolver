@@ -7,7 +7,7 @@ from FieldPlot import dynamic_field
 # antenna with f=500MHz and P=1W
 frequency = 500.e6
 power = 2.
-length = 1./2.
+length = 1/2
 antenna = Antenna(frequency, power, length)
 
 
