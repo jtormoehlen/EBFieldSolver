@@ -12,12 +12,12 @@ def static_field(xy_max, objects, function, nabla='', n_xy=20):
     if not isinstance(objects, list):
         objects = [objects]
     if nabla == 'rot':
-        f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, function=function)
+        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
         df_x, df_y, df_z = fo.rot(f_x, f_y, f_z)
         z_plane = round(len(f_z) / 2)
         arrow_field(xy_max, df_x[:, :, z_plane], df_y[:, :, z_plane], normalize=True, show=True)
     if nabla == 'grad':
-        f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, function=function)
+        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
         df_x, df_y, df_z = fo.grad(f_x)
         z_plane = round(len(f_z) / 2)
         arrow_field(xy_max, -df_x[:, :, z_plane], -df_y[:, :, z_plane], normalize=True, show=True)
@@ -30,15 +30,15 @@ def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
     if not isinstance(objects, list):
         objects = [objects]
     if nabla == 'rot':
-        f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
+        f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
         f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
         arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects='loop')
     if nabla == 'grad':
-        f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
+        f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
         f_x, f_y, f_z = fo.grad(f_x)
         arrow_field3d(xyz_max, -f_x, -f_y, -f_z, field_objects='sphere')
     if nabla == '':
-        f_x, f_y, f_z = fc.field3d(xyz_max, n_xyz, objects, function=function)
+        f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
         arrow_field3d(xyz_max, f_x, f_y, f_z)
 
 
@@ -48,7 +48,7 @@ def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
     t = np.linspace(0., t_max, 50)
     for t_i in t:
         if function == 'E':
-            f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, t=t_i, function='A', nabla='rotrot')
+            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function='A', nabla='rotrot')
             plane = round(len(f_y) / 2)
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
@@ -58,7 +58,7 @@ def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
                        f_x[:, plane, :], f_z[:, plane, :],
                        f_z[:, plane, :], cmap='cool')
         if function == 'H':
-            f_x, f_y, f_z = fc.field3d(xy_max, n_xy, objects, t=t_i, function='A', nabla='rot')
+            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function='A', nabla='rot')
             plane = round(len(f_z) / 2)
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
             x, y, z = fc.mesh3d(xy_max, n_xy)
@@ -67,11 +67,11 @@ def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
             plt.quiver(x[:, :, plane], y[:, :, plane],
                        f_x[:, :, plane], f_y[:, :, plane],
                        (f_x[:, :, plane] / f_xy_norm) * fc.phi_unit(xy_max, n_xy), cmap='cool')
-        if function == 'S':
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function, xz_plane=True)
-            fc.field_round(f_x, f_z, xy_max, objects[0])
-            cfunc = f_x * fc.radius_unit(xy_max, n_xy)
-            arrow_field(xy_max, f_x, f_z, cfunc=cfunc, show=False)
+        # if function == 'S':
+        #     f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t_i, function=function, xz_plane=True)
+        #     fc.field_round(f_x, f_z, xy_max, objects[0])
+        #     cfunc = f_x * fc.radius_unit(xy_max, n_xy)
+        #     arrow_field(xy_max, f_x, f_z, cfunc=cfunc, show=False)
         fa.save_frame(function)
     fa.save_anim(function) if save else fa.render_anim(function)
 
@@ -104,17 +104,20 @@ def arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects='', show=True):
 
 
 def potential_lines(xy_max, f_xy, field_objects=(None,), show=False):
-    x, y = fc.mesh(xy_max, len(f_xy), indexing='xy')
-    f_xy_levels = np.linspace(np.min(f_xy) / 10, np.max(f_xy) / 10, 4)
-    plt.contour(x, y, f_xy, f_xy_levels, colors='k', alpha=0.5)
+    x, y, z = fc.mesh3d(xy_max, len(f_xy), indexing='xy')
+    plane = round(len(z) / 2)
+    f_xy_levels = np.linspace(np.min(f_xy[:, :, plane]) / 10, np.max(f_xy[:, :, plane]) / 10, 4)
+    plt.contour(x[:, :, plane], y[:, :, plane], f_xy[:, :, plane], f_xy_levels, colors='k', alpha=0.5)
     draw(field_objects)
     fa.render_frame() if show else 0
 
 
 def field_lines(xy_max, f_x, f_y, field_objects=(None,), show=True):
-    x, y = fc.mesh(xy_max, len(f_x), indexing='xy')
-    f_xy_norm = np.hypot(f_x, f_y)
-    plt.streamplot(x, y, f_x, f_y, color=np.log(f_xy_norm), cmap='cool', zorder=0, density=2)
+    x, y, z = fc.mesh3d(xy_max, len(f_x), indexing='xy')
+    plane = round(len(z) / 2)
+    f_xy_norm = np.hypot(f_x[:, :, plane], f_y[:, :, plane])
+    plt.streamplot(x[:, :, plane], y[:, :, plane], f_x[:, :, plane], f_y[:, :, plane],
+                   color=np.log(f_xy_norm), cmap='cool', zorder=0, density=2)
     draw(field_objects)
     fa.render_frame() if show else 0
 
@@ -126,11 +129,11 @@ def draw(field_objects):
 
 
 def draw_loop():
-    ring = Ellipse((0, 0), 1, 2, edgecolor='black', fill=False)
+    ring = Ellipse((0, 0), 2, 3, edgecolor='black', fill=False)
     plt.gca().add_patch(ring)
     art3d.pathpatch_2d_to_3d(ring, z=0, zdir="x")
-    plt.quiver(0., 0., 0., 0., .5, 0., color='red')
-    plt.quiver(0., .5, 0., 0., 0., 1., color='green')
+    plt.quiver(0., 0., 0., 0., 1., 0., color='red')
+    plt.quiver(0., 1., 0., 0., 0., 1.5, color='green')
 
 
 def draw_sphere():

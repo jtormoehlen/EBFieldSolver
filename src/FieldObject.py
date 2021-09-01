@@ -11,24 +11,16 @@ Z_0 = np.sqrt(mu_0 / epsilon_0)
 
 class Charge:
     epsilon = 1. / (4. * np.pi * epsilon_0)
-    mu = (mu_0 / (4. * np.pi))
 
-    def __init__(self, q, r0_x, r0_y, r0_z=0, v_x=0, v_y=0, v_z=0):
+    def __init__(self, q, r0_x, r0_y, r0_z=0):
         self.q = q
         self.r0 = np.array([r0_x, r0_y, r0_z])
-        self.v = np.array([v_x, v_y, v_z])
         self.R = 0.25
 
     def form(self):
-        if np.linalg.norm(self.v) == 0:
-            qcolor = 'blue' if self.q < 0 else 'red'
-            circle = plt.Circle((self.r0[0], self.r0[1]), self.R, color=qcolor)
-            plt.gca().add_patch(circle)
-        else:
-            isymbol = 'x' if self.v[2] < 0 else 'o'
-            circle = plt.Circle((self.r0[0], self.r0[2]), self.R, color='grey')
-            plt.gca().add_patch(circle)
-            # plt.scatter(self.r0[0], self.r0[2], self.R*10, 'black', isymbol, zorder=2)
+        qcolor = 'blue' if self.q < 0 else 'red'
+        circle = plt.Circle((self.r0[0], self.r0[1]), self.R, color=qcolor)
+        plt.gca().add_patch(circle)
 
     def E(self, x, y, z, t=0):
         r = np.array([x, y, z])
@@ -42,17 +34,37 @@ class Charge:
         phi = self.epsilon * self.q * (1 / r_r0_norm) * np.array([1., 0., 0.])
         return phi
 
+
+class Current:
+    mu = (mu_0 / (4. * np.pi))
+
+    def __init__(self, I, r0, dl):
+        self.I = I
+        self.r0 = r0
+        self.dl = dl
+
+    def form(self):
+        y = 0
+        # isymbol = 'x' if self.v[2] < 0 else 'o'
+        # circle = plt.Circle((self.r0[0], self.r0[2]), self.R, color='grey')
+        # plt.gca().add_patch(circle)
+        # # plt.scatter(self.r0[0], self.r0[2], self.R*10, 'black', isymbol, zorder=2)
+
     def B(self, x, y, z, t=0):
         r = np.array([x, y, z])
-        r_r0_norm = np.linalg.norm(r - self.r0)
-        v_cross_r_r0 = np.cross(self.v, r - self.r0)
-        B = self.mu * ((self.q * v_cross_r_r0) / (r_r0_norm ** 3))
+        B = 0
+        for i in range(len(self.r0)):
+            r_r0_norm = np.linalg.norm(r - self.r0[i])
+            dl_cross_r_r0 = np.cross(self.dl[i], r - self.r0[i])
+            B += self.mu * ((self.I * dl_cross_r_r0) / (r_r0_norm ** 3))
         return B
 
     def A(self, x, y, z, t=0):
         r = np.array([x, y, z])
-        r_r0_norm = np.linalg.norm(r - self.r0)
-        A = self.mu * ((self.q * self.v) / r_r0_norm)
+        A = 0
+        for i in range(len(self.r0)):
+            r_r0_norm = np.linalg.norm(r - self.r0[i])
+            A += self.mu * ((self.I * self.dl[i]) / r_r0_norm)
         return A
 
 
