@@ -1,8 +1,5 @@
-import sys
-
-import numpy as np
 from FieldObject import Antenna
-from FieldPlot import dynamic_field
+from FieldAnimation import render_anim
 
 # antenna with f=500MHz and P=1W
 frequency = 500.e6
@@ -17,7 +14,4 @@ if __name__ == "__main__":
     # T -> period of antenna oscillation
     t_max = antenna.T
 
-    # dynamic_field(xyz_max, t_max, antenna, function='E', save=True)
-    dynamic_field(xyz_max, t_max, antenna, function='H', save=True)
-
-sys.exit(0)
+    render_anim(xyz_max, t_max, antenna, 'E', save=False)

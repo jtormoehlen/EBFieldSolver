@@ -1,59 +1,41 @@
-import os
-import imageio as iio
+import sys
+
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 from matplotlib import animation
+
+import FieldPlot as fp
 
 
 def render_frame(x_label='$x$', y_label='$y$', back_color='white', show=True, aspect=True):
-    plt.xlabel(r'' + x_label + '')
-    plt.ylabel(r'' + y_label + '')
+    plt.xlabel(r'' + x_label + '/m')
+    plt.ylabel(r'' + y_label + '/m')
     plt.gca().set_facecolor(back_color)
     plt.gca().set_aspect('equal') if aspect else plt.gca().set_aspect('auto')
     plt.show() if show else 0
 
 
-def render_anim(location):
-    fig = plt.gcf()
-    frames = []
-    dpath = 'img/temporary'
-    os.makedirs(dpath) if not os.path.isdir(dpath) else 0
-    for i in range(0, 50, 1):
-        fpath = dpath + '/' + location + str(i) + '.png'
-        img = mpimg.imread(fpath)
-        # plt.rcParams["figure.figsize"] = (10, 10)
-        frame = plt.imshow(img, animated=True)
-        plt.gca().axis('off')
-        frames.append([frame])
-        os.remove(fpath)
-    animation.ArtistAnimation(fig, frames, interval=50, blit=True)
-    plt.show()
+def render_anim(xy_max, t_max, objects, function, n_xy=30, save=False):
+    fig = plt.figure(figsize=(6, 6))
+    ax = plt.subplot(1, 1, 1)
+    x, y = fp.init_dynamic_field(xy_max, n_xy, function)
+    f_x, f_y, f_c = fp.dynamic_field(xy_max, 0, objects, function)
+    Q = ax.quiver(x, y, f_x, f_y, f_c, cmap='cool')
 
+    def animate(i):
+        dt = t_max * 0.05 * i
+        f_x, f_z, f_c = fp.dynamic_field(xy_max, dt, objects, function)
+        Q.set_UVC(f_x, f_z, f_c)
+        return Q,
 
-def save_anim(location):
-    dpath = 'img/dynamic'
-    os.makedirs(dpath) if not os.path.isdir(dpath) else 0
-    with iio.get_writer(dpath + '/' + location + '.gif', mode='I') as writer:
-        for i in range(0, 50, 1):
-            fpath = 'img/temporary/' + location + str(i) + '.png'
-            image = iio.imread(fpath)
-            writer.append_data(image)
-            os.remove(fpath)
-    print('Saving ' + os.getcwd() + '/img/dynamic/' + str(location) + '.gif')
+    anim = animation.FuncAnimation(fig, animate,
+                                   frames=20, interval=100, blit=True)
+    plt.tight_layout()
 
-
-def save_frame(location):
-    render_frame(show=False)
-    ftype = location
-    dpath = 'img/temporary'
-    location = 'img/temporary/' + location
-    os.makedirs(dpath) if not os.path.isdir(dpath) else 0
-    for i in range(0, 50, 1):
-        fpath = location + str(i) + '.png'
-        if not os.path.exists(fpath):
-            plt.savefig(fpath)
-            progress = round(((i + 1) / 50.) * 100.)
-            if progress % 10 == 0:
-                print('Loading ' + ftype + ': ' + str(progress) + '%')
-            break
-    plt.cla()
+    if save:
+        print('Rendering .gif...')
+        anim.save('img/dynamic/' + function + '.gif',
+                  writer='imagemagick', fps=10, dpi=100, extra_args=['-layers Optimize'])
+        sys.exit(0)
+    else:
+        print('Rendering animation...')
+        plt.show()

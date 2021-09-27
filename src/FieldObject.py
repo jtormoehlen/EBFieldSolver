@@ -106,7 +106,7 @@ class Antenna:
             e_pow = 1.j * (rho - (self.omega * t))
             return const * ((rcrossp_cross_r * far) + (r_dot_rdotp * (near_3 - near_2))) * np.exp(e_pow)
         else:
-            self.factor = .1
+            self.factor = .025
             return (1.j * Z_0) / (mu_0 * self.k_0)
 
     def H(self, x, y, z, t):
@@ -125,7 +125,7 @@ class Antenna:
             e_pow = 1.j * (rho - (self.omega * t))
             return const * r_cross_p * (far + near_2) * np.exp(e_pow)
         else:
-            self.factor = .005
+            self.factor = .0005
             return 1. / mu_0
 
     def A(self, x, y, z, t, nabla=''):

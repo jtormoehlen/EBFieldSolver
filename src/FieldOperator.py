@@ -72,4 +72,3 @@ def cartesian_to_spherical(x, y, z, v):
     m2 = [np.cos(theta) * np.cos(phi), np.cos(theta) * np.sin(phi), -np.sin(theta)]
     m3 = [-np.sin(phi), np.cos(phi), 0]
     return np.array([np.dot(m1, v), np.dot(m2, v), np.dot(m3, v)])
-
