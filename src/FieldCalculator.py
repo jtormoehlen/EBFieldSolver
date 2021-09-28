@@ -8,7 +8,7 @@ def mesh(xy_max, n_xy, indexing='ij'):
     return xx, yy
 
 
-def field(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij', nabla=''):
+def field(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij'):
     x, y, z = mesh3d(xyz_max, n_xyz, indexing=indexing)
     x_field, y_field, z_field = np.zeros_like(x), np.zeros_like(y), np.zeros_like(z)
     for object in objects:
@@ -16,12 +16,7 @@ def field(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij', nabla=''):
             for j in range(len(y)):
                 for k in range(len(z)):
                     f = getattr(object, function)
-                    if nabla == 'rot':
-                        field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t, nabla))
-                    elif nabla == 'rotrot':
-                        field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t, nabla))
-                    else:
-                        field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t))
+                    field = np.real(f(x[i][j][k], y[i][j][k], z[i][j][k], t))
                     x_field[i][j][k] += field[0]
                     y_field[i][j][k] += field[1]
                     z_field[i][j][k] += field[2]
@@ -36,18 +31,17 @@ def mesh3d(xyz_max, n_xyz, indexing='ij'):
     return xxx, yyy, zzz
 
 
-def field_round(f_x, f_y, xy_max, object):
-    unit = (xy_max / len(f_x)) * object.get_factor()
+def field_round(f_x, f_y, f_xy_min):
     for i in range(len(f_x)):
         for j in range(len(f_y)):
             f_xy_norm = np.sqrt(f_x[i][j] ** 2 + f_y[i][j] ** 2)
-            if f_xy_norm > unit:
-                f_x[i][j] = (f_x[i][j] / f_xy_norm) * unit
-                f_y[i][j] = (f_y[i][j] / f_xy_norm) * unit
+            if f_xy_norm > f_xy_min * 20:
+                f_x[i][j] = (f_x[i][j] / f_xy_norm) * f_xy_min * 20
+                f_y[i][j] = (f_y[i][j] / f_xy_norm) * f_xy_min * 20
     return f_x, f_y
 
 
-def radius_unit(xy_max, n_xy):
+def r_unit(xy_max, n_xy):
     x, y, z = mesh3d(xy_max, n_xy)
     plane = round(n_xy / 2)
     phi = np.arctan2(y[:, :, plane], x[:, :, plane])

@@ -8,32 +8,28 @@ from mpl_toolkits import mplot3d
 from matplotlib.patches import Circle, PathPatch, Ellipse
 
 
-def static_field(xy_max, objects, function, nabla='', n_xy=30):
+def static_field(xy_max, objects, function, nabla='', n_xy=30, t=-1):
     if not isinstance(objects, list):
         objects = [objects]
-    if nabla == 'rot':
-        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
-        df_x, df_y, df_z = fo.rot(f_x, f_y, f_z)
-        z_plane = round(len(f_z) / 2)
-        arrow_field(xy_max, df_x[:, :, z_plane], df_y[:, :, z_plane], normalize=True, show=True)
-    if nabla == 'grad':
-        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
-        df_x, df_y, df_z = fo.grad(f_x)
-        z_plane = round(len(f_z) / 2)
-        arrow_field(xy_max, -df_x[:, :, z_plane], -df_y[:, :, z_plane], objects, normalize=True, show=True)
-    if nabla == '':
-        # f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function, indexing='xy')
-        # field_lines(xy_max, f_x, f_y, objects)
-        f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function='A', nabla='rotrot')
-        plane = round(len(f_y) / 2)
-        f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
-        f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
-        x, y, z = fc.mesh3d(xy_max, n_xy)
-        fc.field_round(f_x[:, plane, :], f_z[:, plane, :], xy_max, objects[0])
-        plt.quiver(x[:, plane, :], z[:, plane, :],
-                   f_x[:, plane, :], f_z[:, plane, :],
-                   f_z[:, plane, :], cmap='cool')
-        fa.render_frame()
+    f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
+    if t == 0:
+        x, y = init_dynamic_field(xy_max, n_xy, function)
+        f_x, f_y, f_c = dynamic_field(xy_max, 0, objects, function)
+        f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
+        f_x, f_y, f_c = dynamic_field(xy_max, 0, objects, function, f_xy_min)
+        plt.quiver(x, y, f_x, f_y, f_c, cmap='cool', pivot='mid')
+    else:
+        if nabla == 'rot':
+            df_x, df_y, df_z = fo.rot(f_x, f_y, f_z)
+            z_plane = round(len(f_z) / 2)
+            arrow_field(xy_max, df_x[:, :, z_plane], df_y[:, :, z_plane], normalize=True, show=True)
+        elif nabla == 'grad':
+            df_x, df_y, df_z = fo.grad(f_x)
+            z_plane = round(len(f_z) / 2)
+            arrow_field(xy_max, -df_x[:, :, z_plane], -df_y[:, :, z_plane], normalize=True, show=True)
+        else:
+            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function, indexing='xy')
+            field_lines(xy_max, f_x, f_y, objects)
 
 
 def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
@@ -47,7 +43,7 @@ def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
         f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
         f_x, f_y, f_z = fo.grad(f_x)
         arrow_field3d(xyz_max, -f_x, -f_y, -f_z, field_objects='sphere')
-    if nabla == '':
+    else:
         f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
         arrow_field3d(xyz_max, f_x, f_y, f_z)
 
@@ -64,33 +60,28 @@ def init_dynamic_field(xy_max, n_xy, function):
         return x[:, :, plane], y[:, :, plane]
 
 
-def dynamic_field(xy_max, t, objects, function, n_xy=30):
+def dynamic_field(xy_max, t, objects, function, f_xy_min=1, n_xy=30):
     if not isinstance(objects, list):
         objects = [objects]
+    f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t, function=function)
     if function == 'E':
         if objects[0].L > 0:
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t, function='A', nabla='rotrot')
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
-        else:
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t, function=function)
         plane = round(len(f_y) / 2)
-        fc.field_round(f_x[:, plane, :], f_z[:, plane, :], xy_max, objects[0])
+        fc.field_round(f_x[:, plane, :], f_z[:, plane, :], f_xy_min)
         return f_x[:, plane, :], f_z[:, plane, :], f_z[:, plane, :]
     if function == 'H':
         if objects[0].L > 0:
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t, function='A', nabla='rot')
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
-        else:
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t, function=function)
         plane = round(len(f_z) / 2)
-        fc.field_round(f_x[:, :, plane], f_y[:, :, plane], xy_max, objects[0])
+        fc.field_round(f_x[:, :, plane], f_y[:, :, plane], f_xy_min)
         f_xy_norm = np.sqrt(f_x[:, :, plane] ** 2 + f_y[:, :, plane] ** 2)
         return f_x[:, :, plane], f_y[:, :, plane], (f_x[:, :, plane] / f_xy_norm) * fc.phi_unit(xy_max, n_xy)
-    # S: f_x * fc.radius_unit(xy_max, n_xy)
+    # S: f_x * fc.r_unit(xy_max, n_xy)
 
 
-def arrow_field(xy_max, f_x, f_y, field_objects=(None,), normalize=False, cfunc=None, show=True):
+def arrow_field(xy_max, f_x, f_y, normalize=False, cfunc=None, show=True):
     x, y = fc.mesh(xy_max, len(f_x))
     if normalize:
         f_xy_norm = np.sqrt(f_x ** 2 + f_y ** 2)
@@ -103,15 +94,13 @@ def arrow_field(xy_max, f_x, f_y, field_objects=(None,), normalize=False, cfunc=
     else:
         cfunc = cfunc
     plt.quiver(x, y, f_x / f_xy_norm, f_y / f_xy_norm, cfunc, cmap='cool')
-    # plt.quiver(x, y, f_x / f_xy_norm, f_y / f_xy_norm)
-    # draw(field_objects)
     fa.render_frame() if show else 0
 
 
 def arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects='', show=True):
     x, y, z = fc.mesh3d(xyz_max, len(f_x))
     plt.subplot(projection='3d', label='none')
-    plt.gca().set_zlabel(r'$z$')
+    plt.gca().set_zlabel(r'$z$/m')
     plt.quiver(x, y, z, f_x, f_y, f_z, length=xyz_max / len(f_x), normalize=True)
     draw_loop() if field_objects == 'loop' else 0
     draw_sphere() if field_objects == 'sphere' else 0

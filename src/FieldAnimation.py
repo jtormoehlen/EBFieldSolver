@@ -1,6 +1,7 @@
 import sys
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import animation
 
 import FieldPlot as fp
@@ -19,11 +20,13 @@ def render_anim(xy_max, t_max, objects, function, n_xy=30, save=False):
     ax = plt.subplot(1, 1, 1)
     x, y = fp.init_dynamic_field(xy_max, n_xy, function)
     f_x, f_y, f_c = fp.dynamic_field(xy_max, 0, objects, function)
-    Q = ax.quiver(x, y, f_x, f_y, f_c, cmap='cool')
+    f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
+    Q = ax.quiver(x, y, f_x, f_y,
+                  f_c, cmap='cool', pivot='mid')
 
     def animate(i):
         dt = t_max * 0.05 * i
-        f_x, f_z, f_c = fp.dynamic_field(xy_max, dt, objects, function)
+        f_x, f_z, f_c = fp.dynamic_field(xy_max, dt, objects, function, f_xy_min)
         Q.set_UVC(f_x, f_z, f_c)
         return Q,
 
