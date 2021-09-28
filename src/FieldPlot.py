@@ -50,7 +50,7 @@ def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
 
 def init_dynamic(xy_max, n_xy, function):
     x, y, z = fc.mesh3d(xy_max, n_xy)
-    if function == 'E':
+    if function == 'E' or function == 'S':
         fa.render_frame(y_label='$z$', show=False)
         plane = round(len(y) / 2)
         return x[:, plane, :], z[:, plane, :]
@@ -78,7 +78,19 @@ def dynamic(xy_max, t, objects, function, f_xy_min=1, n_xy=30):
         fc.field_round(f_x[:, :, plane], f_y[:, :, plane], f_xy_min)
         f_xy_norm = np.sqrt(f_x[:, :, plane] ** 2 + f_y[:, :, plane] ** 2)
         return f_x[:, :, plane], f_y[:, :, plane], (f_x[:, :, plane] / f_xy_norm) * fc.phi_unit(xy_max, n_xy)
-    # S: f_x * fc.r_unit(xy_max, n_xy)
+    if function == 'S':
+        if objects[0].L > 0:
+            E_x, E_y, E_z = fc.field(xy_max, n_xy, objects, t=t, function='E')
+            E_x, E_y, E_z = fo.rot(E_x, E_y, E_z)
+            E_x, E_y, E_z = fo.rot(E_x, E_y, E_z)
+            H_x, H_y, H_z = fc.field(xy_max, n_xy, objects, t=t, function='H')
+            H_x, H_y, H_z = fo.rot(H_x, H_y, H_z)
+            f_x = E_y * H_z - E_z * H_y
+            f_z = E_x * H_y - E_y * H_x
+        plane = round(len(f_x) / 2)
+        fc.field_round(f_x[:, plane, :], f_z[:, plane, :], f_xy_min)
+        f_xy_norm = np.sqrt(f_x[:, plane, :] ** 2 + f_z[:, plane, :] ** 2)
+        return f_x[:, plane, :], f_z[:, plane, :], (f_x[:, plane, :] / f_xy_norm) * fc.r_unit(xy_max, n_xy)
 
 
 def arrow_field(xy_max, f_x, f_y, normalize=False, cfunc=None, show=True):

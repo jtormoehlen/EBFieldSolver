@@ -7,7 +7,7 @@ from matplotlib import animation
 import FieldPlot as fp
 
 
-def render_frame(x_label='$x$', y_label='$y$', back_color='white', show=True, aspect=True):
+def render_frame(x_label='$x$', y_label='$y$', back_color='black', show=True, aspect=True):
     plt.xlabel(r'' + x_label + '/m')
     plt.ylabel(r'' + y_label + '/m')
     plt.gca().set_facecolor(back_color)
@@ -24,6 +24,7 @@ def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
     f_x, f_y, f_c = fp.dynamic(xy_max, 0, objects, function, f_xy_min)
     Q = ax.quiver(x, y, f_x, f_y,
                   f_c, cmap='cool', pivot='mid')
+    # ax.plot([0, 0], [-objects.h, objects.h], '-w')
 
     def animate(i):
         dt = t_max * 0.05 * i

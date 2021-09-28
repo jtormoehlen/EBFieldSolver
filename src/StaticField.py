@@ -27,7 +27,7 @@ for angle in np.linspace(0, 2 * np.pi, 10, endpoint=False):
 current = Current(I, r0, dl)
 
 """linear antenna"""
-antenna = Antenna(500.0e6, 2.0, 7/2)
+antenna = Antenna(500.0e6, 2.0, 1/2)
 
 if __name__ == "__main__":
     xy_max = 5

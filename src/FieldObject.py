@@ -24,14 +24,12 @@ class Charge:
     def E(self, x, y, z, t=0):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        E = self.epsilon * self.q * ((r - self.r0) / r_r0_norm ** 3)
-        return E
+        return self.epsilon * self.q * ((r - self.r0) / r_r0_norm ** 3)
 
     def phi(self, x, y, z, t=0):
         r = np.array([x, y, z])
         r_r0_norm = np.linalg.norm(r - self.r0)
-        phi = self.epsilon * self.q * (1 / r_r0_norm) * np.array([1, 0, 0])
-        return phi
+        return self.epsilon * self.q * (1 / r_r0_norm) * np.array([1, 0, 0])
 
 
 class Current:
@@ -132,4 +130,5 @@ class Antenna:
         return np.array([0, 0, A_z])
 
     def S(self, x, y, z, t):
-        return np.cross(self.E(x, y, z, t), self.H(x, y, z, t))
+        if self.L == 0:
+            return np.cross(self.E(x, y, z, t), self.H(x, y, z, t))

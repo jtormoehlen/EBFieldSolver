@@ -5,13 +5,13 @@ from FieldAnimation import dynamic_field
 frequency = 500.0e6
 
 """radiation power P=1W"""
-power = 2.0
+power = 1.0
 
 """rod wavelength factor"""
-length = 7/2
+length = 1/2
 
 """initialize antenna with parameters"""
-antenna = Antenna(frequency, power, length)
+antenna = Antenna(frequency, power)
 
 
 if __name__ == "__main__":
@@ -20,4 +20,4 @@ if __name__ == "__main__":
     """T -> period of antenna oscillation"""
     t_max = antenna.T
 
-    dynamic_field(xyz_max, t_max, antenna, 'H', save=True)
+    dynamic_field(xyz_max, t_max, antenna, 'S', save=True)
