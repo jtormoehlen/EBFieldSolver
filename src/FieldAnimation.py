@@ -15,18 +15,19 @@ def render_frame(x_label='$x$', y_label='$y$', back_color='white', show=True, as
     plt.show() if show else 0
 
 
-def render_anim(xy_max, t_max, objects, function, n_xy=30, save=False):
+def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
     fig = plt.figure(figsize=(6, 6))
     ax = plt.subplot(1, 1, 1)
-    x, y = fp.init_dynamic_field(xy_max, n_xy, function)
-    f_x, f_y, f_c = fp.dynamic_field(xy_max, 0, objects, function)
+    x, y = fp.init_dynamic(xy_max, n_xy, function)
+    f_x, f_y, f_c = fp.dynamic(xy_max, 0, objects, function)
     f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
+    f_x, f_y, f_c = fp.dynamic(xy_max, 0, objects, function, f_xy_min)
     Q = ax.quiver(x, y, f_x, f_y,
                   f_c, cmap='cool', pivot='mid')
 
     def animate(i):
         dt = t_max * 0.05 * i
-        f_x, f_z, f_c = fp.dynamic_field(xy_max, dt, objects, function, f_xy_min)
+        f_x, f_z, f_c = fp.dynamic(xy_max, dt, objects, function, f_xy_min)
         Q.set_UVC(f_x, f_z, f_c)
         return Q,
 

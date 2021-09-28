@@ -13,10 +13,10 @@ def static_field(xy_max, objects, function, nabla='', n_xy=30, t=-1):
         objects = [objects]
     f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
     if t == 0:
-        x, y = init_dynamic_field(xy_max, n_xy, function)
-        f_x, f_y, f_c = dynamic_field(xy_max, 0, objects, function)
+        x, y = init_dynamic(xy_max, n_xy, function)
+        f_x, f_y, f_c = dynamic(xy_max, 0, objects, function)
         f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
-        f_x, f_y, f_c = dynamic_field(xy_max, 0, objects, function, f_xy_min)
+        f_x, f_y, f_c = dynamic(xy_max, 0, objects, function, f_xy_min)
         plt.quiver(x, y, f_x, f_y, f_c, cmap='cool', pivot='mid')
     else:
         if nabla == 'rot':
@@ -48,7 +48,7 @@ def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
         arrow_field3d(xyz_max, f_x, f_y, f_z)
 
 
-def init_dynamic_field(xy_max, n_xy, function):
+def init_dynamic(xy_max, n_xy, function):
     x, y, z = fc.mesh3d(xy_max, n_xy)
     if function == 'E':
         fa.render_frame(y_label='$z$', show=False)
@@ -60,7 +60,7 @@ def init_dynamic_field(xy_max, n_xy, function):
         return x[:, :, plane], y[:, :, plane]
 
 
-def dynamic_field(xy_max, t, objects, function, f_xy_min=1, n_xy=30):
+def dynamic(xy_max, t, objects, function, f_xy_min=1, n_xy=30):
     if not isinstance(objects, list):
         objects = [objects]
     f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t, function=function)
