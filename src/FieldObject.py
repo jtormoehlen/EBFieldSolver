@@ -68,66 +68,65 @@ class Current:
 class Antenna:
     def __init__(self, frequency, power, l=0, x=0, y=0, z=0):
         self.r0 = np.array([x, y, z])
+        self.P = power
         self.T = 1 / frequency
         self.omega = 2 * np.pi * frequency
         self.lambda_0 = c / frequency
         self.k_0 = (2 * np.pi) / self.lambda_0
         self.L = l * self.lambda_0
         self.h = self.L / 2
-        self.I_0 = power / 1e3
         self.p_z = np.sqrt(12 * np.pi * c * power / (mu_0 * self.omega ** 4))
 
-    def p(self, t):
+    def p(self):
         e_z = np.array([0, 0, 1])
-        return self.p_z * np.exp(-1j * self.omega * t) * e_z
+        d = self.lambda_0 / 100
+        I_0 = np.sqrt((48 * np.pi * self.P) / (Z_0 * self.k_0 ** 2 * d ** 2))
+        return (1j * I_0 * d) / (2 * self.omega) * e_z
 
     def E(self, x, y, z, t=0):
         if self.L == 0:
-            p = self.p(t)
-            r = np.array([x, y, z]) - self.r0
-            r_norm = np.linalg.norm(r)
-            r = r / r_norm
-            r_cross_p = np.cross(r, p)
-            rcrossp_cross_r = np.cross(r_cross_p, r)
-            r_dot_p = np.dot(r, p)
-            r_dot_rdotp = np.dot(3 * r, r_dot_p) - p
-
-            const = (self.omega ** 3 / (4 * np.pi * epsilon_0 * c ** 3))
-            rho = (self.omega * r_norm) / c
-            far = 1 / rho
-            near_3 = 1 / rho ** 3
-            near_2 = 1j / rho ** 2
-            e_pow = 1j * (rho - (self.omega * t))
-            return const * ((rcrossp_cross_r * far) + (r_dot_rdotp * (near_3 - near_2))) * np.exp(e_pow)
+            p = self.p()
+            r_dir = np.array([x, y, z]) - self.r0
+            r = np.linalg.norm(r_dir)
+            n = r_dir / r
+            n_cross_p = np.cross(n, p)
+            ncrossp_cross_n = np.cross(n_cross_p, n)
+            n_dot_p = np.dot(n, p)
+            n_dot_ndotp = np.dot(3 * n, n_dot_p) - p
+            const = 1 / (4 * np.pi * epsilon_0)
+            exp_rt = np.exp(1j * (self.k_0 * r - self.omega * t))
+            return const * (self.k_0 ** 2 * ncrossp_cross_n * (exp_rt / r) +
+                            n_dot_ndotp * ((1 / r ** 3) - ((1j * self.k_0) / r ** 2)) * exp_rt)
         else:
-            A = self.A(x, y, z, t)
-            return A * (1j * Z_0) / (mu_0 * self.k_0)
+            return self.A(x, y, z, t) * (1j * Z_0) / (mu_0 * self.k_0)
 
     def H(self, x, y, z, t=0):
         if self.L == 0:
-            p = self.p(t)
-            r = np.array([x, y, z]) - self.r0
-            r_norm = np.linalg.norm(r)
-            r = r / r_norm
-            r_cross_p = np.cross(r, p)
-
-            const = (self.omega ** 3 / (4 * np.pi * c ** 2))
-            rho = (self.omega * r_norm) / c
-            far = 1 / rho
-            near_2 = 1j / rho ** 2
-            e_pow = 1j * (rho - (self.omega * t))
-            return const * r_cross_p * (far + near_2) * np.exp(e_pow)
+            p = self.p()
+            r_dir = np.array([x, y, z]) - self.r0
+            r = np.linalg.norm(r_dir)
+            n = r_dir / r
+            n_cross_p = np.cross(n, p)
+            const = (c * self.k_0 ** 2) / (4 * np.pi)
+            exp_rt = np.exp(1j * (self.k_0 * r - self.omega * t))
+            return const * n_cross_p * (exp_rt / r) * (1 - (1 / (1j * self.k_0 * r)))
         else:
             return self.A(x, y, z, t) * (1 / mu_0)
 
     def A(self, x, y, z, t=0):
         r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
-        theta = np.arccos(z / r)
-        f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
-        e_t = np.exp(1j * (self.k_0 * r - self.omega * t))
-        I = self.I_0 / np.sin(self.k_0 * self.h)
-        A_z = ((mu_0 * I * e_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
-        return np.array([0, 0, A_z])
+        p = self.p()
+        if self.L == 0:
+            const = -(1j * mu_0 * self.omega) / (4 * np.pi)
+            return const * p * ((np.exp(1j * (self.k_0 * r - self.omega * t))) / r)
+        else:
+            theta = np.arccos(z / r)
+            f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
+            e_t = np.exp(1j * (self.k_0 * r - self.omega * t))
+            I_0 = np.sqrt((48 * np.pi * self.P) / (Z_0 * self.k_0 ** 2 * self.L ** 2))
+            I = I_0 / np.sin(self.k_0 * self.h)
+            A_z = ((mu_0 * I * e_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
+            return np.array([0, 0, A_z])
 
     def S(self, x, y, z, t):
         if self.L == 0:

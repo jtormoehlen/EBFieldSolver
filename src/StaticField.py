@@ -27,7 +27,8 @@ for angle in np.linspace(0, 2 * np.pi, 10, endpoint=False):
 current = Current(I, r0, dl)
 
 """linear antenna"""
-antenna = Antenna(500.0e6, 2.0, 1/2)
+antenna_0 = Antenna(500.0e6, 1.0, 0)
+antenna_half = Antenna(500.0e6, 1.0, 0.5)
 
 if __name__ == "__main__":
     xy_max = 5
@@ -36,8 +37,10 @@ if __name__ == "__main__":
     # static_field(xy_max, current, function='B')
     # static_field(xy_max, current, function='A', nabla='rot')
 
-    xz_max = 2 * antenna.lambda_0
-    static_field(xz_max, antenna, function='E', t=0)
+    xz_max_0 = 2 * antenna_0.lambda_0
+    xz_max_half = 2 * antenna_0.lambda_0
+    static_field(xz_max_0, antenna_0, function='E', t=0.25*antenna_0.T)
+    static_field(xz_max_half, antenna_half, function='E', t=0.25*antenna_half.T)
     # print(antenna.k_0 * antenna.h / np.pi)
 
     xyz_max = 2

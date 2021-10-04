@@ -12,12 +12,13 @@ def static_field(xy_max, objects, function, nabla='', n_xy=30, t=-1):
     if not isinstance(objects, list):
         objects = [objects]
     f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
-    if t == 0:
+    if t >= 0:
         x, y = init_dynamic(xy_max, n_xy, function)
-        f_x, f_y, f_c = dynamic(xy_max, 0, objects, function)
+        f_x, f_y, f_c = dynamic(xy_max, t, objects, function)
         f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
-        f_x, f_y, f_c = dynamic(xy_max, 0, objects, function, f_xy_min)
+        f_x, f_y, f_c = dynamic(xy_max, t, objects, function, f_xy_min)
         plt.quiver(x, y, f_x, f_y, f_c, cmap='cool', pivot='mid')
+        plt.show()
     else:
         if nabla == 'rot':
             df_x, df_y, df_z = fo.rot(f_x, f_y, f_z)
