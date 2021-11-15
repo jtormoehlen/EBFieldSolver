@@ -7,51 +7,43 @@ import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits import mplot3d
 from matplotlib.patches import Circle, PathPatch, Ellipse
 
+n_xyz = 30
+n_xyz_3d = 6
 
-def static_field(xy_max, objects, function, nabla='', n_xy=30, t=-1):
+
+def static_field(xy_max, objects, function, nabla=''):
     if not isinstance(objects, list):
         objects = [objects]
-    f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function)
-    if t >= 0:
-        x, y = init_dynamic(xy_max, n_xy, function)
-        f_x, f_y, f_c = dynamic(xy_max, t, objects, function)
-        f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
-        f_x, f_y, f_c = dynamic(xy_max, t, objects, function, f_xy_min)
-        plt.quiver(x, y, f_x, f_y, f_c, cmap='cool', pivot='mid')
-        plt.show()
-    else:
-        if nabla == 'rot':
-            df_x, df_y, df_z = fo.rot(f_x, f_y, f_z)
-            z_plane = round(len(f_z) / 2)
-            arrow_field(xy_max, df_x[:, :, z_plane], df_y[:, :, z_plane], normalize=True, show=True)
-        elif nabla == 'grad':
-            df_x, df_y, df_z = fo.grad(f_x)
-            z_plane = round(len(f_z) / 2)
-            arrow_field(xy_max, -df_x[:, :, z_plane], -df_y[:, :, z_plane], normalize=True, show=True)
-        else:
-            f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, function=function, indexing='xy')
-            field_lines(xy_max, f_x, f_y, objects)
+    f_x, f_y, f_z = fc.field(xy_max, n_xyz, objects, function=function, indexing='xy')
+    if nabla == 'rot':
+        df_y, df_x, df_z = fo.rot(f_y, f_x, f_z)
+        field_lines(xy_max, -df_x, -df_y)
+    elif nabla == 'grad':
+        df_y, df_x, df_z = fo.grad(f_x)
+        field_lines(xy_max, -df_x, -df_y)
+    elif nabla == '':
+        field_lines(xy_max, f_x, f_y, objects)
 
 
-def static_field3d(xyz_max, objects, function, nabla='', n_xyz=6):
+def static_field3d(xyz_max, objects, function, nabla=''):
     if not isinstance(objects, list):
         objects = [objects]
     if nabla == 'rot':
-        f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
+        f_x, f_y, f_z = fc.field(xyz_max, n_xyz_3d, objects, function=function)
         f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
         arrow_field3d(xyz_max, f_x, f_y, f_z, field_objects='loop')
     if nabla == 'grad':
-        f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
+        f_x, f_y, f_z = fc.field(xyz_max, n_xyz_3d, objects, function=function)
         f_x, f_y, f_z = fo.grad(f_x)
         arrow_field3d(xyz_max, -f_x, -f_y, -f_z, field_objects='sphere')
-    else:
-        f_x, f_y, f_z = fc.field(xyz_max, n_xyz, objects, function=function)
+    elif nabla == '':
+        f_x, f_y, f_z = fc.field(xyz_max, n_xyz_3d, objects, function=function)
         arrow_field3d(xyz_max, f_x, f_y, f_z)
 
 
 def init_dynamic(xy_max, n_xy, function):
     x, y, z = fc.mesh3d(xy_max, n_xy)
-    if function == 'E' or function == 'S':
+    if function == 'E':
         fa.render_frame(y_label='$z$', show=False)
         plane = round(len(y) / 2)
         return x[:, plane, :], z[:, plane, :]
@@ -61,10 +53,10 @@ def init_dynamic(xy_max, n_xy, function):
         return x[:, :, plane], y[:, :, plane]
 
 
-def dynamic(xy_max, t, objects, function, f_xy_min=1, n_xy=30):
+def dynamic(xy_max, t, objects, function, f_xy_min=1):
     if not isinstance(objects, list):
         objects = [objects]
-    f_x, f_y, f_z = fc.field(xy_max, n_xy, objects, t=t, function=function)
+    f_x, f_y, f_z = fc.field(xy_max, n_xyz, objects, t=t, function=function)
     if function == 'E':
         if objects[0].L > 0:
             f_x, f_y, f_z = fo.rot(f_x, f_y, f_z)
@@ -78,35 +70,17 @@ def dynamic(xy_max, t, objects, function, f_xy_min=1, n_xy=30):
         plane = round(len(f_z) / 2)
         fc.field_round(f_x[:, :, plane], f_y[:, :, plane], f_xy_min)
         f_xy_norm = np.sqrt(f_x[:, :, plane] ** 2 + f_y[:, :, plane] ** 2)
-        return f_x[:, :, plane], f_y[:, :, plane], (f_x[:, :, plane] / f_xy_norm) * fc.phi_unit(xy_max, n_xy)
-    if function == 'S':
-        if objects[0].L > 0:
-            E_x, E_y, E_z = fc.field(xy_max, n_xy, objects, t=t, function='E')
-            E_x, E_y, E_z = fo.rot(E_x, E_y, E_z)
-            E_x, E_y, E_z = fo.rot(E_x, E_y, E_z)
-            H_x, H_y, H_z = fc.field(xy_max, n_xy, objects, t=t, function='H')
-            H_x, H_y, H_z = fo.rot(H_x, H_y, H_z)
-            f_x = E_y * H_z - E_z * H_y
-            f_z = E_x * H_y - E_y * H_x
-        plane = round(len(f_x) / 2)
-        fc.field_round(f_x[:, plane, :], f_z[:, plane, :], f_xy_min)
-        f_xy_norm = np.sqrt(f_x[:, plane, :] ** 2 + f_z[:, plane, :] ** 2)
-        return f_x[:, plane, :], f_z[:, plane, :], (f_x[:, plane, :] / f_xy_norm) * fc.r_unit(xy_max, n_xy)
+        return f_x[:, :, plane], f_y[:, :, plane], (f_x[:, :, plane] / f_xy_norm) * fc.phi_unit(xy_max, n_xyz)
 
 
-def arrow_field(xy_max, f_x, f_y, normalize=False, cfunc=None, show=True):
+def arrow_field(xy_max, f_x, f_y, cfunc=None, show=True):
     x, y = fc.mesh(xy_max, len(f_x))
-    if normalize:
-        f_xy_norm = np.sqrt(f_x ** 2 + f_y ** 2)
-        colorf = f_xy_norm
-    else:
-        f_xy_norm = 1.
-        colorf = np.sqrt(f_x ** 2 + f_y ** 2)
+    colorf = np.sqrt(f_x ** 2 + f_y ** 2)
     if cfunc is None:
         cfunc = np.log(colorf)
     else:
         cfunc = cfunc
-    plt.quiver(x, y, f_x / f_xy_norm, f_y / f_xy_norm, cfunc, cmap='cool')
+    plt.quiver(x, y, f_x, f_y, cfunc, cmap='cool')
     fa.render_frame() if show else 0
 
 
@@ -158,4 +132,4 @@ def draw_sphere():
     x = np.cos(u) * np.sin(v)
     y = np.sin(u) * np.sin(v)
     z = np.cos(v)
-    plt.gca().plot_surface(x, y, z, color="r", alpha=.33)
+    plt.gca().plot_surface(x, y, z, color="r", alpha=1)

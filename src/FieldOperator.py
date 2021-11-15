@@ -33,7 +33,7 @@ def rot(F_x, F_y, F_z):
 #
 # (*$(\vec{e}_r, \vec{e}_\vartheta, \vec{e}_\varphi) \mapsto (\vec{e}_x, \vec{e}_y, \vec{e}_z)$*)
 #
-def spherical_to_cartesian(x, y, z, v):
+def spher_to_cart(x, y, z, v):
     r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
     theta = np.arccos(z / r)
     phi = np.arctan2(y, x)
@@ -46,7 +46,7 @@ def spherical_to_cartesian(x, y, z, v):
 #
 # (*$(\vec{e}_x, \vec{e}_y, \vec{e}_z) \mapsto (\vec{e}_r, \vec{e}_\vartheta, \vec{e}_\varphi)$*)
 #
-def cartesian_to_spherical(x, y, z, v):
+def cart_to_spher(x, y, z, v):
     r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
     theta = np.arccos(z / r)
     phi = np.arctan2(y, x)

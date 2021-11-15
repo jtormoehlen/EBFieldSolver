@@ -5,7 +5,7 @@ import matplotlib.patches as patch
 epsilon_0 = 8.85e-12
 mu_0 = 4. * np.pi * 10.0e-7
 c = 299792458.
-Z_0 = np.sqrt(mu_0 / epsilon_0)
+Z_0 = np.sqrt(2 * mu_0) / epsilon_0
 
 
 class Charge:
@@ -75,17 +75,15 @@ class Antenna:
         self.k_0 = (2 * np.pi) / self.lambda_0
         self.L = l * self.lambda_0
         self.h = self.L / 2
-        self.p_z = np.sqrt(12 * np.pi * c * power / (mu_0 * self.omega ** 4))
 
-    def p(self):
+    def p(self, d):
         e_z = np.array([0, 0, 1])
-        d = self.lambda_0 / 100
         I_0 = np.sqrt((48 * np.pi * self.P) / (Z_0 * self.k_0 ** 2 * d ** 2))
         return (1j * I_0 * d) / (2 * self.omega) * e_z
 
     def E(self, x, y, z, t=0):
         if self.L == 0:
-            p = self.p()
+            p = self.p(self.lambda_0 / 10)
             r_dir = np.array([x, y, z]) - self.r0
             r = np.linalg.norm(r_dir)
             n = r_dir / r
@@ -102,7 +100,7 @@ class Antenna:
 
     def H(self, x, y, z, t=0):
         if self.L == 0:
-            p = self.p()
+            p = self.p(self.lambda_0 / 10)
             r_dir = np.array([x, y, z]) - self.r0
             r = np.linalg.norm(r_dir)
             n = r_dir / r
@@ -115,7 +113,7 @@ class Antenna:
 
     def A(self, x, y, z, t=0):
         r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
-        p = self.p()
+        p = self.p(self.L)
         if self.L == 0:
             const = -(1j * mu_0 * self.omega) / (4 * np.pi)
             return const * p * ((np.exp(1j * (self.k_0 * r - self.omega * t))) / r)
@@ -124,10 +122,5 @@ class Antenna:
             f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
             e_t = np.exp(1j * (self.k_0 * r - self.omega * t))
             I_0 = np.sqrt((48 * np.pi * self.P) / (Z_0 * self.k_0 ** 2 * self.L ** 2))
-            I = I_0 / np.sin(self.k_0 * self.h)
-            A_z = ((mu_0 * I * e_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
+            A_z = ((mu_0 * I_0 * e_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
             return np.array([0, 0, A_z])
-
-    def S(self, x, y, z, t):
-        if self.L == 0:
-            return np.cross(self.E(x, y, z, t), self.H(x, y, z, t))

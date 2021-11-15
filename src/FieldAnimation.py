@@ -1,31 +1,9 @@
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
-
 import FieldPlot as fp
-
-
-# Print iterations progress
-def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd='\r'):
-    """
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
-    """
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
-    # Print New Line on Complete
-    if iteration == total:
-        print()
 
 
 def render_frame(x_label='$x$', y_label='$y$', back_color='white', show=True, aspect=True):
@@ -45,26 +23,25 @@ def dynamic_field(xy_max, t_max, objects, function, n_xy=30, save=False):
     f_x, f_y, f_c = fp.dynamic(xy_max, 0, objects, function, f_xy_min)
     Q = ax.quiver(x, y, f_x, f_y,
                   f_c, cmap='cool', pivot='mid')
-    ax.plot([0, 0], [-objects.h, objects.h], '-k')
-    frames = 20
+    frames = 50
 
-    def animate(i):
+    def update(i):
         dt = t_max * (1.0 / frames) * i
         f_x, f_z, f_c = fp.dynamic(xy_max, dt, objects, function, f_xy_min)
         Q.set_UVC(f_x, f_z, f_c)
-        printProgressBar(i + 1, frames, prefix='Progress:', suffix='Complete', length=50)
         return Q,
 
-    anim = animation.FuncAnimation(fig, animate,
-                                   frames=frames, interval=100, blit=True)
     plt.tight_layout()
+    anim = animation.FuncAnimation(fig, update,
+                                   frames=frames, interval=100, blit=True)
 
     if save:
         print('Saving ' + function + ' animation...')
-        path = 'img/dynamic/' + function + '_' + str(round(objects.L / objects.lambda_0, 3)) + '.gif'
-        anim.save(path,
-                  writer='imagemagick', fps=10, dpi=100, extra_args=['-layers Optimize'])
-        print(path + ' saved')
+        path = 'img/dynamic/' + function + f'_{round(objects.L / objects.lambda_0, 3)}.gif'
+        anim.save(path, writer='imagemagick',
+                  fps=10, dpi=100, extra_args=['-layers Optimize'],
+                  progress_callback=lambda i, n: print(f'Saving frame {i} of {n}'))
+        sys.exit(0)
     else:
         print('Rendering animation...')
         plt.show()

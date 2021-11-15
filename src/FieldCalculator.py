@@ -32,12 +32,13 @@ def mesh3d(xyz_max, n_xyz, indexing='ij'):
 
 
 def field_round(f_x, f_y, f_xy_min):
+    span = 20
     for i in range(len(f_x)):
         for j in range(len(f_y)):
             f_xy_norm = np.sqrt(f_x[i][j] ** 2 + f_y[i][j] ** 2)
-            if f_xy_norm > f_xy_min * 20:
-                f_x[i][j] = (f_x[i][j] / f_xy_norm) * f_xy_min * 20
-                f_y[i][j] = (f_y[i][j] / f_xy_norm) * f_xy_min * 20
+            if f_xy_norm > f_xy_min * span:
+                f_x[i][j] = (f_x[i][j] / f_xy_norm) * f_xy_min * span
+                f_y[i][j] = (f_y[i][j] / f_xy_norm) * f_xy_min * span
     return f_x, f_y
 
 
