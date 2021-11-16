@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 
-epsilon_0 = 8.85e-12
-mu_0 = 4. * np.pi * 10.0e-7
+epsilon_0 = 8.85E-12
+mu_0 = 4. * np.pi * 10.0E-7
 c = 299792458.
 Z_0 = np.sqrt(2 * mu_0) / epsilon_0
 
@@ -120,7 +120,7 @@ class Antenna:
         else:
             theta = np.arccos(z / r)
             f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
-            e_t = np.exp(1j * (self.k_0 * r - self.omega * t))
+            exp_t = np.exp(1j * (self.k_0 * r - self.omega * t))
             I_0 = np.sqrt((48 * np.pi * self.P) / (Z_0 * self.k_0 ** 2 * self.L ** 2))
-            A_z = ((mu_0 * I_0 * e_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
+            A_z = ((mu_0 * I_0 * exp_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
             return np.array([0, 0, A_z])

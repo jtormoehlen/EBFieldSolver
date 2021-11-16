@@ -1,15 +1,8 @@
 import numpy as np
 
 
-def mesh(xy_max, n_xy, indexing='ij'):
-    xx, yy = np.meshgrid(np.linspace(-xy_max, xy_max, n_xy),
-                         np.linspace(-xy_max, xy_max, n_xy),
-                         indexing=indexing)
-    return xx, yy
-
-
 def field(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij'):
-    x, y, z = mesh3d(xyz_max, n_xyz, indexing=indexing)
+    x, y, z = mesh(xyz_max, n_xyz, indexing=indexing)
     x_field, y_field, z_field = np.zeros_like(x), np.zeros_like(y), np.zeros_like(z)
     for object in objects:
         for i in range(len(x)):
@@ -23,7 +16,7 @@ def field(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij'):
     return [x_field, y_field, z_field]
 
 
-def mesh3d(xyz_max, n_xyz, indexing='ij'):
+def mesh(xyz_max, n_xyz, indexing='ij'):
     xxx, yyy, zzz = np.meshgrid(np.linspace(-xyz_max, xyz_max, n_xyz),
                                 np.linspace(-xyz_max, xyz_max, n_xyz),
                                 np.linspace(-xyz_max, xyz_max, n_xyz),
@@ -43,7 +36,7 @@ def field_round(f_x, f_y, f_xy_min):
 
 
 def r_unit(xy_max, n_xy):
-    x, y, z = mesh3d(xy_max, n_xy)
+    x, y, z = mesh(xy_max, n_xy)
     plane = round(n_xy / 2)
     phi = np.arctan2(y[:, :, plane], x[:, :, plane])
     e_r = np.array([np.cos(phi), np.sin(phi)])
@@ -51,7 +44,7 @@ def r_unit(xy_max, n_xy):
 
 
 def phi_unit(xy_max, n_xy):
-    x, y, z = mesh3d(xy_max, n_xy)
+    x, y, z = mesh(xy_max, n_xy)
     plane = round(n_xy / 2)
     phi = np.arctan2(y[:, :, plane], x[:, :, plane])
     e_phi = np.array([-np.sin(phi), np.cos(phi)])

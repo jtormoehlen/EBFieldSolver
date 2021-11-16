@@ -1,8 +1,8 @@
 import numpy as np
-from FieldObject import Charge, Current, Antenna
+from FieldObject import Charge, Current
 from FieldPlot import static_field, static_field3d
 
-"""electrical quadrupole"""
+# electrical quadrupole
 q = x = y = 1
 quadrupole = []
 quadrupole.append(Charge(-q, -x, y))
@@ -10,7 +10,7 @@ quadrupole.append(Charge(q, x, y))
 quadrupole.append(Charge(q, -x, -y))
 quadrupole.append(Charge(-q, x, -y))
 
-"""conductor loop"""
+# conductor loop
 I = 1.0
 r0_x = dl_x = 0
 r0 = []
@@ -33,8 +33,8 @@ if __name__ == "__main__":
     # static_field(xy_max, quadrupole, function='E')
     # static_field(xy_max, quadrupole, nabla='grad', function='phi')
     # static_field(xy_max, current, function='B')
-    # static_field(xy_max, current, nabla='rot', function='A')
+    static_field(xy_max, current, nabla='rot', function='A')
 
     xyz_max = 2
-    static_field3d(xyz_max, current, nabla='rot', function='A')
-    # static_field3d(xy_max, Charge(q, 0, 0, 0), nabla='grad', function='phi')
+    # static_field3d(xyz_max, current, nabla='rot', function='A')
+    static_field3d(xy_max, Charge(q, 0, 0, 0), nabla='grad', function='phi')
