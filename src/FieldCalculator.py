@@ -24,8 +24,11 @@ def mesh(xyz_max, n_xyz, indexing='ij'):
     return xxx, yyy, zzz
 
 
-def field_round(f_x, f_y, f_xy_min):
-    span = 20
+def field_round(f_x, f_y, f_xy_min, objects):
+    if objects.rod - round(objects.rod) == 0:
+        span = 70
+    else:
+        span = 20
     for i in range(len(f_x)):
         for j in range(len(f_y)):
             f_xy_norm = np.sqrt(f_x[i][j] ** 2 + f_y[i][j] ** 2)
@@ -49,3 +52,18 @@ def phi_unit(xy_max, n_xy):
     phi = np.arctan2(y[:, :, plane], x[:, :, plane])
     e_phi = np.array([-np.sin(phi), np.cos(phi)])
     return e_phi
+
+
+def grad(F):
+    f_x, f_y, f_z = np.gradient(F)
+    return np.array([f_x, f_y, f_z])
+
+
+def rot(F_x, F_y, F_z):
+    f_xx, f_xy, f_xz = np.gradient(F_x)
+    f_yx, f_yy, f_yz = np.gradient(F_y)
+    f_zx, f_zy, f_zz = np.gradient(F_z)
+    f_x = f_zy - f_yz
+    f_y = f_xz - f_zx
+    f_z = f_yx - f_xy
+    return np.array([f_x, f_y, f_z])

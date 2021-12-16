@@ -1,11 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patch
 
 epsilon_0 = 8.85E-12
 mu_0 = 4. * np.pi * 10.0E-7
 c = 299792458.
-Z_0 = np.sqrt(2 * mu_0) / epsilon_0
+Z_0 = np.sqrt(mu_0 / epsilon_0)
 
 
 class Charge:
@@ -14,12 +12,6 @@ class Charge:
     def __init__(self, q, r0_x, r0_y, r0_z=0):
         self.q = q
         self.r0 = np.array([r0_x, r0_y, r0_z])
-        self.R = 0.25
-
-    def form(self):
-        qcolor = 'blue' if self.q < 0 else 'red'
-        circle = plt.Circle((self.r0[0], self.r0[1]), self.R, color=qcolor)
-        plt.gca().add_patch(circle)
 
     def E(self, x, y, z, t=0):
         r = np.array([x, y, z])
@@ -35,24 +27,17 @@ class Charge:
 class Current:
     mu = (mu_0 / (4. * np.pi))
 
-    def __init__(self, I, r0, dl):
+    def __init__(self, I, r0, dr):
         self.I = I
         self.r0 = r0
-        self.dl = dl
-
-    def form(self):
-        y = 0
-        # isymbol = 'x' if self.v[2] < 0 else 'o'
-        # circle = plt.Circle((self.r0[0], self.r0[2]), self.R, color='grey')
-        # plt.gca().add_patch(circle)
-        # # plt.scatter(self.r0[0], self.r0[2], self.R*10, 'black', isymbol, zorder=2)
+        self.dr = dr
 
     def B(self, x, y, z, t=0):
         r = np.array([x, y, z])
         B = 0
         for i in range(len(self.r0)):
             r_r0_norm = np.linalg.norm(r - self.r0[i])
-            dl_cross_r_r0 = np.cross(self.dl[i], r - self.r0[i])
+            dl_cross_r_r0 = np.cross(self.dr[i], r - self.r0[i])
             B += self.mu * ((self.I * dl_cross_r_r0) / (r_r0_norm ** 3))
         return B
 
@@ -61,7 +46,7 @@ class Current:
         A = 0
         for i in range(len(self.r0)):
             r_r0_norm = np.linalg.norm(r - self.r0[i])
-            A += self.mu * ((self.I * self.dl[i]) / r_r0_norm)
+            A += self.mu * ((self.I * self.dr[i]) / r_r0_norm)
         return A
 
 
@@ -73,13 +58,14 @@ class Antenna:
         self.omega = 2 * np.pi * frequency
         self.lambda_0 = c / frequency
         self.k_0 = (2 * np.pi) / self.lambda_0
+        self.rod = l
         self.L = l * self.lambda_0
         self.h = self.L / 2
 
     def p(self, d):
         e_z = np.array([0, 0, 1])
         I_0 = np.sqrt((48 * np.pi * self.P) / (Z_0 * self.k_0 ** 2 * d ** 2))
-        return (1j * I_0 * d) / (2 * self.omega) * e_z
+        return (1j * I_0 * d) / (2. * self.omega) * e_z
 
     def E(self, x, y, z, t=0):
         if self.L == 0:
@@ -121,6 +107,11 @@ class Antenna:
             theta = np.arccos(z / r)
             f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
             exp_t = np.exp(1j * (self.k_0 * r - self.omega * t))
-            I_0 = np.sqrt((48 * np.pi * self.P) / (Z_0 * self.k_0 ** 2 * self.L ** 2))
+
+            rod_int = self.rod.is_integer()
+            if not rod_int:
+                I_0 = np.sqrt((4 * np.pi * self.P) / (Z_0 * 1.21883))
+            else:
+                I_0 = np.sqrt((4 * np.pi * self.P) / (Z_0 * 3.31813))
             A_z = ((mu_0 * I_0 * exp_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
             return np.array([0, 0, A_z])

@@ -3,12 +3,13 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
-import FieldPlot as fp
+from FieldPlot import static, static3d, dynamic
+from FieldCalculator import mesh
 
-FRAMES = 25
 
-
-def render_frame(x_label='$x$', y_label='$y$', back_color='black', show=True, aspect=True):
+def init(xy_max, x_label='$x$', y_label='$y$', back_color='white', show=True, aspect=True):
+    plt.xlim(-xy_max, xy_max)
+    plt.ylim(-xy_max, xy_max)
     plt.xlabel(r'' + x_label + '/m')
     plt.ylabel(r'' + y_label + '/m')
     plt.gca().set_facecolor(back_color)
@@ -16,20 +17,39 @@ def render_frame(x_label='$x$', y_label='$y$', back_color='black', show=True, as
     plt.show() if show else 0
 
 
+def static_field(xy_max, objects, function, nabla=''):
+    static(xy_max, objects, function, nabla)
+    init(xy_max)
+
+
+def static_field3d(xyz_max, objects, function, nabla=''):
+    static3d(xyz_max, objects, function, nabla)
+    init(xyz_max, aspect=False)
+
+
 def dynamic_field(xy_max, t_max, objects, function, save=False):
+    FRAMES = 25
     fig = plt.figure(figsize=(6, 6))
     ax = plt.subplot(1, 1, 1)
 
-    x, y = fp.init_dynamic(xy_max, function)
-    f_x, f_y, f_c = fp.dynamic(xy_max, 0, objects, function)
+    x, y, z = mesh(xy_max, 30)
+    plane = round(len(z) / 2)
+    if function == 'E':
+        init(xy_max, y_label='$z$', show=False)
+        x = x[:, plane, :]
+        y = z[:, plane, :]
+    if function == 'H':
+        init(xy_max, show=False)
+        x = x[:, :, plane]
+        y = y[:, :, plane]
+    f_x, f_y, f_c = dynamic(xy_max, 0, objects, function)
     f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
-    f_x, f_y, f_c = fp.dynamic(xy_max, 0, objects, function, f_xy_min)
-    Q = ax.quiver(x, y, f_x, f_y,
-                  f_c, cmap='cool', pivot='mid')
+    f_x, f_y, f_c = dynamic(xy_max, 0, objects, function, f_xy_min)
+    Q = ax.quiver(x, y, f_x, f_y, f_c, cmap='cool', pivot='mid')
 
     def update(i):
         dt = t_max * (1.0 / FRAMES) * i
-        f_x, f_z, f_c = fp.dynamic(xy_max, dt, objects, function, f_xy_min)
+        f_x, f_z, f_c = dynamic(xy_max, dt, objects, function, f_xy_min)
         Q.set_UVC(f_x, f_z, f_c)
         return Q,
 
