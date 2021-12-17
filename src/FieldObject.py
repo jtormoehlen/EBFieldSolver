@@ -1,5 +1,6 @@
 import numpy as np
 
+# constants
 epsilon_0 = 8.85E-12
 mu_0 = 4. * np.pi * 10.0E-7
 c = 299792458.
@@ -10,6 +11,13 @@ class Charge:
     epsilon = 1 / (4 * np.pi * epsilon_0)
 
     def __init__(self, q, r0_x, r0_y, r0_z=0):
+        """
+        Charge object.
+        :param q: charge
+        :param r0_x: position x
+        :param r0_y: position y
+        :param r0_z: position z
+        """
         self.q = q
         self.r0 = np.array([r0_x, r0_y, r0_z])
 
@@ -28,6 +36,12 @@ class Current:
     mu = (mu_0 / (4. * np.pi))
 
     def __init__(self, I, r0, dr):
+        """
+        Current loop object.
+        :param I: Amperage
+        :param r0: position (x, y, z)
+        :param dr: current element
+        """
         self.I = I
         self.r0 = r0
         self.dr = dr
@@ -52,6 +66,15 @@ class Current:
 
 class Antenna:
     def __init__(self, frequency, power, l=0, x=0, y=0, z=0):
+        """
+        Antenna object.
+        :param frequency: radiation frequency f
+        :param power: average radiation power P
+        :param l: antenna length factor: short or linear dipole
+        :param x: position x
+        :param y: position y
+        :param z: position z
+        """
         self.r0 = np.array([x, y, z])
         self.P = power
         self.T = 1 / frequency
