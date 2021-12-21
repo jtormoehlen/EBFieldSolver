@@ -5,7 +5,7 @@ from mpl_toolkits import mplot3d
 from FieldCalculator import rot, grad, field, field_round, mesh, phi_unit
 
 N_XYZ = 30
-N_XYZ_3D = 6
+N_XYZ_3D = 10
 
 
 def static(xy_max, objects, function, nabla=''):
@@ -90,7 +90,10 @@ def arrow_field3d(xyz_max, f_x, f_y, f_z, function, field_objects=(None,)):
     """
     x, y, z = mesh(xyz_max, len(f_x))
     plt.subplot(projection='3d', label='none')
-    plt.gca().set_zlabel(r'$z$/m')
+    if function == 'E' or function == 'phi':
+        plt.gca().set_zlabel(r'$z/$d')
+    elif function == 'B' or function == 'A':
+        plt.gca().set_zlabel(r'$z/$R')
     # cmap = plt.get_cmap()
     # plane = round(len(f_z) / 2)
     # norm = np.hypot(f_x, f_y, f_z)
@@ -129,13 +132,13 @@ def field_lines(xy_max, f_x, f_y, function, field_objects=(None,)):
     plane = round(len(z) / 2)
     f_xy_norm = np.hypot(f_x[:, :, plane], f_y[:, :, plane])
     plt.streamplot(x[:, :, plane], y[:, :, plane], f_x[:, :, plane], f_y[:, :, plane],
-                   color=np.log(f_xy_norm), cmap='cool', zorder=0, density=1)
+                   color=np.log(f_xy_norm), cmap='binary', zorder=0, density=1)
     draw_objects(function, field_objects)
 
 
 def draw_objects(function, field_objects, plot3d=False):
     """
-    Helper-function: Decide whether charges or current loop(s) should be drawn in 2d/3d
+    Helper-function: Decide whether charge(s) or current loop(s) should be drawn in 2d/3d
     :param function: corresponding field
     :param field_objects: desired field objects to draw
     :param plot3d: true if 3d, false else

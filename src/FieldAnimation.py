@@ -7,24 +7,31 @@ from FieldPlot import static, static3d, dynamic
 from FieldCalculator import mesh
 
 
-def init(xy_max, x_label='$x$', y_label='$y$', back_color='white', show=True, aspect=True):
+def init(xy_max, x_label=r'$x$/m', y_label=r'$y$/m', back_color='white', show=True, aspect=True):
     plt.xlim(-xy_max, xy_max)
     plt.ylim(-xy_max, xy_max)
-    plt.xlabel(r'' + x_label + '/m')
-    plt.ylabel(r'' + y_label + '/m')
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
     plt.gca().set_facecolor(back_color)
     plt.gca().set_aspect('equal') if aspect else plt.gca().set_aspect('auto')
+    plt.tight_layout()
     plt.show() if show else 0
 
 
 def static_field(xy_max, objects, function, nabla=''):
     static(xy_max, objects, function, nabla)
-    init(xy_max)
+    if function == 'E' or function == 'phi':
+        init(xy_max, x_label=r'$x/$d', y_label=r'$y/$d')
+    elif function == 'B' or function == 'A':
+        init(xy_max, x_label=r'$x/$R', y_label=r'$y/$R')
 
 
 def static_field3d(xyz_max, objects, function, nabla=''):
     static3d(xyz_max, objects, function, nabla)
-    init(xyz_max, aspect=False)
+    if function == 'E' or function == 'phi':
+        init(xyz_max, x_label=r'$x/$d', y_label=r'$y/$d', aspect=False)
+    elif function == 'B' or function == 'A':
+        init(xyz_max, x_label=r'$x/$R', y_label=r'$y/$R', aspect=False)
 
 
 def dynamic_field(xy_max, t_max, objects, function, save=False):
@@ -53,7 +60,6 @@ def dynamic_field(xy_max, t_max, objects, function, save=False):
         Q.set_UVC(f_x, f_z, f_c)
         return Q,
 
-    plt.tight_layout()
     anim = animation.FuncAnimation(fig, update,
                                    frames=FRAMES, interval=100, blit=True)
 
