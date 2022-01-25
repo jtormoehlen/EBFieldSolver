@@ -38,21 +38,22 @@ def dynamic_field(xy_max, t_max, objects, function, save=False):
     FRAMES = 25
     fig = plt.figure(figsize=(6, 6))
     ax = plt.subplot(1, 1, 1)
-
     x, y, z = mesh(xy_max, 30)
     plane = round(len(z) / 2)
     if function == 'E':
-        init(xy_max, y_label='$z$', show=False)
+        init(xy_max, x_label=r'$x/\lambda_0$', y_label=r'$z/\lambda_0$', show=False)
         x = x[:, plane, :]
         y = z[:, plane, :]
     if function == 'H':
-        init(xy_max, show=False)
+        init(xy_max, x_label=r'$x/\lambda_0$', y_label=r'$y/\lambda_0$', show=False)
         x = x[:, :, plane]
         y = y[:, :, plane]
     f_x, f_y, f_c = dynamic(xy_max, 0, objects, function)
     f_xy_min = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
     f_x, f_y, f_c = dynamic(xy_max, 0, objects, function, f_xy_min)
-    Q = ax.quiver(x, y, f_x, f_y, f_c, cmap='cool', pivot='mid')
+    ax.set_xlim(-xy_max / objects.lambda_0, xy_max / objects.lambda_0)
+    ax.set_ylim(-xy_max / objects.lambda_0, xy_max / objects.lambda_0)
+    Q = ax.quiver(x / objects.lambda_0, y / objects.lambda_0, f_x, f_y, f_c, cmap='cool', pivot='mid')
 
     def update(i):
         dt = t_max * (1.0 / FRAMES) * i

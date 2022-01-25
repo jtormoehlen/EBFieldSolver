@@ -9,7 +9,7 @@ def field(xyz_max, n_xyz, objects, t=-1, function='', indexing='ij'):
     :param objects: list contains all field emitting objects
     :param t: time coord; default: t=0
     :param function: desired field to compute
-    :param indexing: indexing order for mesh; default: line first
+    :param indexing: indexing order for mesh; default: line before column
     :return: real part of desired superposed field at time t
     """
     x, y, z = mesh(xyz_max, n_xyz, indexing=indexing)
@@ -31,7 +31,7 @@ def mesh(xyz_max, n_xyz, indexing='ij'):
     Creates mesh object from three one-dimensional arrays of spatial coords.
     :param xyz_max: spatial coords (x, y, z) all from -xyz_max to xyz_max
     :param n_xyz: number of grid points in -xyz_max to xyz_max
-    :param indexing: indexing order for mesh; default: line first
+    :param indexing: indexing order for mesh; default: line before column
     :return: three 3d-arrays containing spatial coords (mesh)
     """
     xxx, yyy, zzz = np.meshgrid(np.linspace(-xyz_max, xyz_max, n_xyz),
@@ -50,8 +50,11 @@ def field_round(f_x, f_y, f_xy_min, objects):
     :param objects: list contains all field emitting objects
     :return: field with capped vector length
     """
-    if objects.rod - round(objects.rod) == 0:
-        span = 70
+
+    if objects.rod == 0:
+        span = 30
+    elif objects.rod - round(objects.rod) == 0:
+        span = 80
     else:
         span = 20
     for i in range(len(f_x)):
