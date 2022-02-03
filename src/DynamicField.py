@@ -8,10 +8,10 @@ frequency = 1.0E9
 power = 1.0
 
 # rod wavelength factor
-length = 0.5
+length_factor = 0.5
 
 # initialize antenna with parameters
-antenna = Antenna(frequency, power, length)
+antenna = Antenna(frequency, power, length_factor)
 
 if __name__ == "__main__":
     # lambda_0 : wavelength of antenna wave
@@ -19,5 +19,5 @@ if __name__ == "__main__":
     # T : period of antenna oscillation
     t_max = antenna.T
 
-    # dynamic_field(xyz_max, t_max, antenna, function='E', save=False)
-    dynamic_field(xyz_max, t_max, antenna, function='H', save=False)
+    # dynamic_field(xyz_max, t_max, antenna, function='E', save=True)
+    dynamic_field(xyz_max, t_max, antenna, function='H', save=True)
