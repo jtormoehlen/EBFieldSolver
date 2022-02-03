@@ -16,7 +16,7 @@ r = []
 dr = []
 a = 0.5
 b = 1.5
-N = 80
+N = 20
 phi_n = np.linspace(0., 2 * np.pi, N, endpoint=False)
 dphi = 2 * np.pi / N
 for phi in phi_n:
@@ -30,7 +30,7 @@ for phi in phi_n:
 current = Current(I, r, dr)
 
 if __name__ == "__main__":
-    xy_max = 5
+    xy_max = 5.
     # static_field(xy_max, quadrupole, function='E')
     # static_field(xy_max, quadrupole, nabla='grad', function='phi')
     # static_field(xy_max, current, function='B')
@@ -38,4 +38,4 @@ if __name__ == "__main__":
 
     xyz_max = 2.
     static_field3d(xyz_max, current, nabla='rot', function='A')
-    # static_field3d(xy_max, quadrupole, nabla='grad', function='phi')
+    # static_field3d(xyz_max, quadrupole, nabla='grad', function='phi')

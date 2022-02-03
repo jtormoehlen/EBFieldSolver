@@ -41,11 +41,11 @@ def dynamic_field(xy_max, t_max, objects, function, save=False):
     x, y, z = mesh(xy_max, 30)
     plane = round(len(z) / 2)
     if function == 'E':
-        init(xy_max, x_label=r'$x/\lambda_0$', y_label=r'$z/\lambda_0$', show=False)
+        init(xy_max, x_label=r'$x/\lambda_0$', y_label=r'$z/\lambda_0$', show=False, back_color='black')
         x = x[:, plane, :]
         y = z[:, plane, :]
     if function == 'H':
-        init(xy_max, x_label=r'$x/\lambda_0$', y_label=r'$y/\lambda_0$', show=False)
+        init(xy_max, x_label=r'$x/\lambda_0$', y_label=r'$y/\lambda_0$', show=False, back_color='black')
         x = x[:, :, plane]
         y = y[:, :, plane]
     f_x, f_y, f_c = dynamic(xy_max, 0, objects, function)
