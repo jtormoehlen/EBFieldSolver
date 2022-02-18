@@ -1,16 +1,16 @@
 import numpy as np
 
 
-def field(xyz, n_xyz, fobs, t=-1, ffunc='', index='ij'):
+def field(xyz, n_xyz, fobs, t=0, ffunc='', index='ij'):
     """
-    Iterator for spatial and temporal field coords.
-    :param xyz: spatial coords (x, y, z) all from -xyz_max to xyz_max
-    :param n_xyz: number of grid points in -xyz_max to xyz_max
-    :param fobs: list contains all field emitting objects
-    :param t: time coord; default: t=0
-    :param ffunc: desired field to compute
-    :param index: indexing order for mesh; default: line before column
-    :return: real part of desired superposed field at time t
+    Superpose fields (f_x(t), f_y(t), f_z(t)) of field objects.
+    :param xyz: list of spatial coords [x1, x2, y1, y2, z1, z2]
+    :param n_xyz: grid points
+    :param fobs: list of field objects
+    :param t: time coord >= 0
+    :param ffunc: field function
+    :param index: indexing order
+    :return: field (f_x, f_y, f_z)
     """
     x, y, z = mesh(xyz, n_xyz, index=index)
     x_field, y_field, z_field = np.zeros_like(x), np.zeros_like(y), np.zeros_like(z)
@@ -26,38 +26,30 @@ def field(xyz, n_xyz, fobs, t=-1, ffunc='', index='ij'):
     return [x_field, y_field, z_field]
 
 
-def mesh(xyz, n_xyz, index='ij', plot3d=True):
+def mesh(xyz, n_xyz, index='ij'):
     """
-    Creates mesh object from three one-dimensional arrays of spatial coords.
-    :param plot3d:
-    :param xyz: spatial coords (x, y, z) all from -xyz_max to xyz_max
-    :param n_xyz: number of grid points in -xyz_max to xyz_max
-    :param index: indexing order for mesh; default: line before column
-    :return: three 3d-arrays containing spatial coords (mesh)
+    Mesh object of (x, y, z).
+    :param xyz: list of spatial coords [x1, x2, y1, y2, z1, z2]
+    :param n_xyz: grid points
+    :param index: indexing order
+    :return: mesh
     """
-    if plot3d:
-        xxx, yyy, zzz = np.meshgrid(np.linspace(xyz[0], xyz[1], n_xyz),
-                                    np.linspace(xyz[2], xyz[3], n_xyz),
-                                    np.linspace(xyz[4], xyz[5], n_xyz),
-                                    indexing=index)
-        return xxx, yyy, zzz
-    else:
-        xx, yy = np.meshgrid(np.linspace(xyz[0], xyz[1], n_xyz),
-                             np.linspace(xyz[2], xyz[3], n_xyz),
-                             indexing=index)
-        return xx, yy
+    xxx, yyy, zzz = np.meshgrid(np.linspace(xyz[0], xyz[1], n_xyz),
+                                np.linspace(xyz[2], xyz[3], n_xyz),
+                                np.linspace(xyz[4], xyz[5], n_xyz),
+                                indexing=index)
+    return xxx, yyy, zzz
 
 
-def field_round(f_x, f_y, f_xy_min, fobs):
+def field_round(f, fmin, fobs):
     """
-    Capping vector length of given field components.
-    :param f_x: 3d-grid of x-coord
-    :param f_y: 3d-grid of y-coord
-    :param f_xy_min: minimum-length of a vector in field
-    :param fobs: list contains all field emitting objects
-    :return: field with capped vector length
+    Limit arrow length in field.
+    :param f: field (f_x, f_y)
+    :param fmin: minimal length in f
+    :param fobs: list of field objects
+    :return: limited field
     """
-
+    f_x, f_y = f
     if fobs.rod == 0:
         span = 30
     elif fobs.rod - round(fobs.rod) == 0:
@@ -67,18 +59,18 @@ def field_round(f_x, f_y, f_xy_min, fobs):
     for i in range(len(f_x)):
         for j in range(len(f_y)):
             f_xy_norm = np.sqrt(f_x[i][j] ** 2 + f_y[i][j] ** 2)
-            if f_xy_norm > f_xy_min * span:
-                f_x[i][j] = (f_x[i][j] / f_xy_norm) * f_xy_min * span
-                f_y[i][j] = (f_y[i][j] / f_xy_norm) * f_xy_min * span
+            if f_xy_norm > fmin * span:
+                f_x[i][j] = (f_x[i][j] / f_xy_norm) * fmin * span
+                f_y[i][j] = (f_y[i][j] / f_xy_norm) * fmin * span
     return f_x, f_y
 
 
 def phi_unit(xy, n_xy):
     """
-    Angle Unit vector for 2d grid.
-    :param xy: spatial coords (x, y) all from -xy_max to xy_max
-    :param n_xy: number of grid points in -xy_max to xy_max
-    :return: phi unit vector for all grid points
+    Azimuthal unit vector.
+    :param xy: list of spatial coords [x1, x2, y1, y2]
+    :param n_xy: grid points
+    :return: vector phi/|phi|
     """
     x, y, z = mesh(xy, n_xy)
     plane = round(n_xy / 2)
@@ -89,7 +81,7 @@ def phi_unit(xy, n_xy):
 
 def grad(F):
     """
-    Computes gradient field using numpy's gradient function.
+    Gradient field.
     :param F: scalar field
     :return: gradient field
     """
@@ -99,10 +91,10 @@ def grad(F):
 
 def rot(F_x, F_y, F_z):
     """
-    Computes vortex field using numpy's gradient function.
-    :param F_x: 3d-grid of x-coord
-    :param F_y: 3d-grid of y-coord
-    :param F_z: 3d-grid of z-coord
+    Vortex field.
+    :param F_x: x-comp of field
+    :param F_y: y-comp of field
+    :param F_z: z-comp of field
     :return: vortex field
     """
     f_xx, f_xy, f_xz = np.gradient(F_x)

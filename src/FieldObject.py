@@ -12,7 +12,7 @@ class Charge:
 
     def __init__(self, q, r0_x, r0_y, r0_z=0):
         """
-        Charge object.
+        Point charge.
         :param q: charge
         :param r0_x: position x
         :param r0_y: position y
@@ -37,7 +37,7 @@ class Current:
 
     def __init__(self, I, r0, dr):
         """
-        Current loop object.
+        Current loop.
         :param I: Amperage
         :param r0: position (x, y, z)
         :param dr: current element
@@ -67,7 +67,7 @@ class Current:
 class Antenna:
     def __init__(self, frequency, power, l=0, x=0, y=0, z=0):
         """
-        Antenna object.
+        Antenna.
         :param frequency: radiation frequency f
         :param power: average radiation power P
         :param l: antenna length factor: short or linear dipole
