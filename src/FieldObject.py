@@ -121,7 +121,7 @@ class Antenna:
             return self.A(x, y, z, t) * (1 / mu_0)
 
     def A(self, x, y, z, t=0):
-        r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        r = np.sqrt((x - self.r0[0]) ** 2 + (y - self.r0[1]) ** 2 + (z - self.r0[2]) ** 2)
         p = self.p(self.L)
         if self.L == 0:
             const = -(1j * mu_0 * self.omega) / (4 * np.pi)
