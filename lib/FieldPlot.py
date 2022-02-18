@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from mpl_toolkits import mplot3d
-from FieldCalculator import rot, grad, field, field_round, mesh, phi_unit
+from lib.FieldCalculator import rot, grad, field, field_round, mesh, phi_unit
 
 N_XYZ = 30
 N_XYZ_3D = 10
@@ -59,13 +59,13 @@ def dynamic(xy, t, fobs, ffunc, fmin):
         if fobs[0].L > 0:
             f_x, f_y, f_z = rot(f_x, f_y, f_z)
             f_x, f_y, f_z = rot(f_x, f_y, f_z)
-        field_round(f_x[:, n, :], f_z[:, n, :], fmin, fobs[0])
+        field_round([f_x[:, n, :], f_z[:, n, :]], fmin, fobs[0])
         f_xz_norm = np.sqrt(f_x[:, n, :] ** 2 + f_z[:, n, :] ** 2)
         return f_x[:, n, :], f_z[:, n, :], f_z[:, n, :] / f_xz_norm
     elif ffunc == 'H':
         if fobs[0].L > 0:
             f_x, f_y, f_z = rot(f_x, f_y, f_z)
-        field_round(f_x[:, :, n], f_y[:, :, n], fmin, fobs[0])
+        field_round([f_x[:, :, n], f_y[:, :, n]], fmin, fobs[0])
         f_xy_norm = np.sqrt(f_x[:, :, n] ** 2 + f_y[:, :, n] ** 2)
         return f_x[:, :, n], f_y[:, :, n], (f_x[:, :, n] / f_xy_norm) * phi_unit(xy, N_XYZ)
 

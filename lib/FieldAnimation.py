@@ -2,10 +2,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation, PillowWriter
-from FieldPlot import static, static3d, dynamic, N_XYZ
-from FieldCalculator import mesh
+from lib.FieldPlot import static, static3d, dynamic, N_XYZ
+from lib.FieldCalculator import mesh
 
-plt.style.use('./figstyle.mpstyle')
+plt.style.use('./lib/figstyle.mpstyle')
 
 
 def init(xy, labs=['$x$', '$y$'], bcg='white', show=True):
