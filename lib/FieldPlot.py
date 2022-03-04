@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from mpl_toolkits import mplot3d
-from lib.FieldCalculator import rot, grad, field, field_round, mesh, phi_unit
+from lib.FieldCalculator import rot, grad, field, field_limit, mesh, phi_unit
 
-N_XYZ = 30
-N_XYZ_3D = 10
+N = 30
+N_3D = 10
 
 
 def static(xy, fobs, ffunc, nabla):
@@ -16,14 +16,14 @@ def static(xy, fobs, ffunc, nabla):
     :param ffunc: field function
     :param nabla: nabla operator {'' (none default), 'rot', 'grad'}
     """
-    f_x, f_y, f_z = field(xy, N_XYZ, fobs, ffunc=ffunc, index='xy')
+    Fx, Fy, Fz = field(xy, N, fobs, ffunc=ffunc, rc='xy')
     if nabla == 'rot':
-        potential_lines(xy, f_z, ffunc)
-        f_y, f_x, f_z = -rot(f_y, f_x, f_z)
+        pot_lines(xy, Fz, ffunc)
+        Fy, Fx, Fz = -rot(Fy, Fx, Fz)
     elif nabla == 'grad':
-        potential_lines(xy, f_x, ffunc)
-        f_y, f_x, f_z = -grad(f_x)
-    field_lines(xy, [f_x, f_y], ffunc, fobs)
+        pot_lines(xy, Fx, ffunc)
+        Fy, Fx, Fz = -grad(Fx)
+    field_lines(xy, [Fx, Fy], ffunc, fobs)
 
 
 def static3d(xyz, fobs, ffunc, nabla, view):
@@ -35,15 +35,15 @@ def static3d(xyz, fobs, ffunc, nabla, view):
     :param nabla: nabla operator {'' (none default), 'rot', 'grad'}
     :param view: view plane {''(none default), 'xy', 'xz', 'yz'}
     """
-    f_x, f_y, f_z = field(xyz, N_XYZ_3D, fobs, ffunc=ffunc)
+    Fx, Fy, Fz = field(xyz, N_3D, fobs, ffunc=ffunc)
     if nabla == 'rot':
-        f_x, f_y, f_z = rot(f_x, f_y, f_z)
+        Fx, Fy, Fz = rot(Fx, Fy, Fz)
     elif nabla == 'grad':
-        f_x, f_y, f_z = -grad(f_x)
-    arrow_field3d(xyz, [f_x, f_y, f_z], ffunc, view, fobs)
+        Fx, Fy, Fz = -grad(Fx)
+    arrow_field3d(xyz, [Fx, Fy, Fz], ffunc, view, fobs)
 
 
-def dynamic(xy, t, fobs, ffunc, fmin):
+def dynamic(xy, t, fobs, ffunc, fmin=1.):
     """
     Time-dependent field.
     :param xy: list of spatial coords [x1, x2, y1, y2]
@@ -53,89 +53,86 @@ def dynamic(xy, t, fobs, ffunc, fmin):
     :param fmin: minimal length in f
     :return: E- or H-field
     """
-    n = round(N_XYZ / 2)
-    f_x, f_y, f_z = field(xy, N_XYZ, fobs, t=t, ffunc=ffunc)
+    n = round(N / 2)
+    Fx, Fy, Fz = field(xy, N, fobs, t, ffunc)
+    Fx, Fy, Fz = rot(Fx, Fy, Fz)
     if ffunc == 'E':
-        if fobs[0].L > 0:
-            f_x, f_y, f_z = rot(f_x, f_y, f_z)
-            f_x, f_y, f_z = rot(f_x, f_y, f_z)
-        field_round([f_x[:, n, :], f_z[:, n, :]], fmin, fobs[0])
-        f_xz_norm = np.sqrt(f_x[:, n, :] ** 2 + f_z[:, n, :] ** 2)
-        return f_x[:, n, :], f_z[:, n, :], f_z[:, n, :] / f_xz_norm
+        Fx, Fy, Fz = rot(Fx, Fy, Fz)
+        field_limit([Fx[:, n, :], Fz[:, n, :]], fmin)
+        fnorm = np.hypot(Fx[:, n, :], Fz[:, n, :])
+        return Fx[:, n, :], Fz[:, n, :], Fz[:, n, :] / fnorm
     elif ffunc == 'H':
-        if fobs[0].L > 0:
-            f_x, f_y, f_z = rot(f_x, f_y, f_z)
-        field_round([f_x[:, :, n], f_y[:, :, n]], fmin, fobs[0])
-        f_xy_norm = np.sqrt(f_x[:, :, n] ** 2 + f_y[:, :, n] ** 2)
-        return f_x[:, :, n], f_y[:, :, n], (f_x[:, :, n] / f_xy_norm) * phi_unit(xy, N_XYZ)
+        field_limit([Fx[:, :, n], Fy[:, :, n]], fmin)
+        fnorm = np.hypot(Fx[:, :, n], Fy[:, :, n])
+        return Fx[:, :, n], Fy[:, :, n], (Fx[:, :, n] / fnorm) * phi_unit(xy, N)
 
 
-def arrow_field3d(xyz, f, ffunc, view, fobs=(None,)):
+def arrow_field3d(xyz, F, ffunc, view, fobs=(None,)):
     """
     Plot arrows of 3d-field.
     :param xyz: list of spatial coords [x1, x2, y1, y2]
-    :param f: field (f_x, f_y, f_z)
+    :param F: field (Fx, Fy, Fz)
     :param ffunc: field function
     :param view: view plane {''(none default), 'xy', 'xz', 'yz'}
     :param fobs: list of field objects
     """
-    f_x, f_y, f_z = f
-    x, y, z = mesh(xyz, N_XYZ_3D)
+    Fx, Fy, Fz = F
+    x, y, z = mesh(xyz, N_3D)
     ax = plt.axes(projection='3d')  # orthogonal projection: proj_type='ortho'
-    n = round(N_XYZ_3D / 2)
+    n = round(N_3D / 2)
     ax.set_zlim3d(np.min(z), np.max(z))
     ax.set_zlabel(r'$z$')
-    p0 = np.zeros_like(z)
-    for i in range(len(p0)):
-        for j in range(len(p0)):
+    p = np.zeros_like(z)
+    for i in range(len(p)):
+        for j in range(len(p)):
             if view == 'xy':
-                p0[i, j, n] = 1.
+                p[i, j, n] = 1.
                 ax.view_init(90, -90)
             elif view == 'xz':
-                p0[i, n, j] = 1.
+                p[i, n, j] = 1.
                 ax.view_init(0, -90)
             elif view == 'yz':
-                p0[n, i, j] = 1.
+                p[n, i, j] = 1.
                 ax.view_init(0, 0)
             else:
-                p0 = np.ones_like(z)
-    ax.quiver(x, y, z, f_x * p0, f_y * p0, f_z * p0, color='black',
+                p = np.ones_like(z)
+    ax.quiver(x, y, z, Fx * p, Fy * p, Fz * p, color='black',
               arrow_length_ratio=0.5, pivot='middle',
-              length=max(xyz) / N_XYZ_3D, normalize=True,
+              length=max(xyz) / N_3D, normalize=True,
               alpha=0.5)
     draw_fobs(ffunc, fobs, plot3d=True)
 
 
-def potential_lines(xy, f, ffunc, fobs=(None,)):
+def pot_lines(xy, F, ffunc, fobs=(None,)):
     """
     Plot contour lines of heights.
     :param xy: list of spatial coords [x1, x2, y1, y2]
-    :param f: heights
+    :param F: heights
     :param ffunc: field function
     :param fobs: list of field objects
     """
-    x, y, z = mesh(xy, N_XYZ, index='xy')
-    n = round(N_XYZ / 2)
-    f_xy_levels = np.linspace(np.min(f[:, :, n]) / 10, np.max(f[:, :, n]) / 10, 4)
-    plt.contour(x[:, :, n], y[:, :, n], f[:, :, n],
-                f_xy_levels, colors='k', alpha=0.5)
+    x, y, z = mesh(xy, N, rc='xy')
+    n = round(N / 2)
+    flvl = np.linspace(np.min(F[:, :, n]) / 10, np.max(F[:, :, n]) / 10, 4)
+    plt.contour(x[:, :, n], y[:, :, n], F[:, :, n],
+                flvl, colors='k', alpha=0.5)
     draw_fobs(ffunc, fobs)
 
 
-def field_lines(xy, f, ffunc, fobs=(None,)):
+def field_lines(xy, F, ffunc, fobs=(None,)):
     """
     Plot lines of field.
     :param xy: list of spatial coords [x1, x2, y1, y2]
-    :param f: field (f_x, f_y)
+    :param F: field (Fx, Fy)
     :param ffunc: field function
     :param fobs: list of field objects
     """
-    f_x, f_y = f
-    x, y, z = mesh(xy, N_XYZ, index='xy')
-    n = round(N_XYZ / 2)
-    f_norm = np.hypot(f_x[:, :, n], f_y[:, :, n])
-    plt.streamplot(x[:, :, n], y[:, :, n], f_x[:, :, n], f_y[:, :, n],
-                   color=np.log(f_norm), cmap='binary', zorder=0, density=2)
+    Fx, Fy = F
+    x, y, z = mesh(xy, N, rc='xy')
+    n = round(N / 2)
+    fnorm = np.hypot(Fx[:, :, n], Fy[:, :, n])
+    plt.streamplot(x[:, :, n], y[:, :, n], Fx[:, :, n], Fy[:, :, n],
+                   color=np.log(fnorm), cmap='binary', zorder=0, density=2)
     draw_fobs(ffunc, fobs)
 
 
@@ -153,15 +150,14 @@ def draw_fobs(ffunc, fobs, plot3d=False):
             draw_loop(plot3d, fobs)
 
 
-def draw_loop(plot3d=False, fobs=(None,)):
+def draw_loop(plot3d, fobs):
     """
     Draw current loop.
     :param plot3d: plot 3d or 2d
     :param fobs: list of field objects
     """
+    r = fobs[0].r0
     if plot3d:
-        fob = fobs[0]
-        r = fob.r0
         for i in range(len(r)):
             for j in range(0, 3, 1):
                 if i + 1 < len(r):
@@ -175,8 +171,6 @@ def draw_loop(plot3d=False, fobs=(None,)):
                  color='black', ls='-', lw=2., alpha=0.5)
 
     else:
-        fob = fobs[0]
-        r = fob.r0
         for i in range(len(r)):
             for j in range(0, 2, 1):
                 if i + 1 < len(r):
@@ -186,7 +180,7 @@ def draw_loop(plot3d=False, fobs=(None,)):
                  color='black', ls='-', lw=5.0, alpha=0.5)
 
 
-def draw_charges(plot3d=False, fobs=(None,)):
+def draw_charges(plot3d, fobs):
     """
     Draw discrete charge distribution.
     :param plot3d: plot 3d or 2d
