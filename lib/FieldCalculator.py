@@ -3,14 +3,14 @@ import numpy as np
 
 def field(xyz, n, fobs, t=0, ffunc='', rc='ij'):
     """
-    Superpose fields (f_x(t), f_y(t), f_z(t)) of field objects.
-    :param xyz: list of spatial coords [x1, x2, y1, y2, z1, z2]
+    Superpose fields (f_x(t),f_y(t),f_z(t)) of field objects.
+    :param xyz: spatial coords [x1,x2,y1,y2,z1,z2]
     :param n: grid points
-    :param fobs: list of field objects
-    :param t: time coord >= 0
+    :param fobs: field objects
+    :param t: time>=0
     :param ffunc: field function
     :param rc: indexing order
-    :return: field (f_x, f_y, f_z)
+    :return: field (f_x,f_y,f_z)
     """
     x, y, z = mesh(xyz, n, rc=rc)
     Fx, Fy, Fz = np.zeros_like(x), np.zeros_like(y), np.zeros_like(z)
@@ -28,8 +28,8 @@ def field(xyz, n, fobs, t=0, ffunc='', rc='ij'):
 
 def mesh(xyz, n, rc='ij'):
     """
-    Mesh object of (x, y, z).
-    :param xyz: list of spatial coords [x1, x2, y1, y2, z1, z2]
+    Mesh object of (x,y,z).
+    :param xyz: spatial coords [x1,x2,y1,y2,z1,z2]
     :param n: grid points
     :param rc: indexing order
     :return: mesh
@@ -41,11 +41,11 @@ def mesh(xyz, n, rc='ij'):
     return x, y, z
 
 
-def field_limit(f, fmin):
+def field_limit(f, lb):
     """
     Limit arrow length in field.
-    :param f: field (Fx, Fy)
-    :param fmin: minimal length in f
+    :param f: field (Fx,Fy)
+    :param lb: lower bound
     :return: limited field
     """
     Fx, Fy = f
@@ -53,18 +53,18 @@ def field_limit(f, fmin):
     for i in range(len(Fx)):
         for j in range(len(Fy)):
             fnorm = np.sqrt(Fx[i][j] ** 2 + Fy[i][j] ** 2)
-            if fnorm > fmin * fmul:
-                Fx[i][j] = (Fx[i][j] / fnorm) * fmin * fmul
-                Fy[i][j] = (Fy[i][j] / fnorm) * fmin * fmul
+            if fnorm > lb * fmul:
+                Fx[i][j] = (Fx[i][j] / fnorm) * lb * fmul
+                Fy[i][j] = (Fy[i][j] / fnorm) * lb * fmul
     return Fx, Fy
 
 
 def phi_unit(xyz, n):
     """
     Azimuthal unit vector.
-    :param xyz: list of spatial coords [x1, x2, y1, y2]
+    :param xyz: spatial coords [x1,x2,y1,y2]
     :param n: grid points
-    :return: vector phi/|phi|
+    :return: unit vector phi/|phi|
     """
     x, y, z = mesh(xyz, n)
     m = round(n / 2)

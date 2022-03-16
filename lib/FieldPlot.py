@@ -4,17 +4,17 @@ from matplotlib.patches import Ellipse
 from mpl_toolkits import mplot3d
 from lib.FieldCalculator import rot, grad, field, field_limit, mesh, phi_unit
 
-N = 30
-N_3D = 10
+N = 30  # grid points 2d/dyn
+N3D = 10  # grid points 3d
 
 
 def static(xy, fobs, ffunc, nabla):
     """
     Stationary 2d-field.
-    :param xy: list of spatial coords [x1, x2, y1, y2]
-    :param fobs: list of field objects
+    :param xy: spatial coords [x1,x2,y1,y2]
+    :param fobs: field objects
     :param ffunc: field function
-    :param nabla: nabla operator {'' (none default), 'rot', 'grad'}
+    :param nabla: nabla operator {''(none),'rot','grad'}
     """
     Fx, Fy, Fz = field(xy, N, fobs, ffunc=ffunc, rc='xy')
     if nabla == 'rot':
@@ -29,13 +29,13 @@ def static(xy, fobs, ffunc, nabla):
 def static3d(xyz, fobs, ffunc, nabla, view):
     """
     Stationary 3d-field.
-    :param xyz: list of spatial coords [x1, x2, y1, y2, z1, z2]
+    :param xyz: list of spatial coords [x1,x2,y1,y2,z1,z2]
     :param fobs: list of field objects
     :param ffunc: field function
-    :param nabla: nabla operator {'' (none default), 'rot', 'grad'}
-    :param view: view plane {''(none default), 'xy', 'xz', 'yz'}
+    :param nabla: nabla operator {''(none),'rot','grad'}
+    :param view: view plane {''(none),'xy','xz','yz'}
     """
-    Fx, Fy, Fz = field(xyz, N_3D, fobs, ffunc=ffunc)
+    Fx, Fy, Fz = field(xyz, N3D, fobs, ffunc=ffunc)
     if nabla == 'rot':
         Fx, Fy, Fz = rot(Fx, Fy, Fz)
     elif nabla == 'grad':
@@ -43,14 +43,14 @@ def static3d(xyz, fobs, ffunc, nabla, view):
     arrow_field3d(xyz, [Fx, Fy, Fz], ffunc, view, fobs)
 
 
-def dynamic(xy, t, fobs, ffunc, fmin=1.):
+def dynamic(xy, t, fobs, ffunc, lb=1.):
     """
     Time-dependent field.
-    :param xy: list of spatial coords [x1, x2, y1, y2]
-    :param t: time coord >= 0
-    :param fobs: list of field objects
+    :param xy: spatial coords [x1,x2,y1,y2]
+    :param t: time>=0
+    :param fobs: field objects
     :param ffunc: field function
-    :param fmin: minimal length in f
+    :param lb: lower bound
     :return: E- or H-field
     """
     n = round(N / 2)
@@ -58,11 +58,11 @@ def dynamic(xy, t, fobs, ffunc, fmin=1.):
     Fx, Fy, Fz = rot(Fx, Fy, Fz)
     if ffunc == 'E':
         Fx, Fy, Fz = rot(Fx, Fy, Fz)
-        field_limit([Fx[:, n, :], Fz[:, n, :]], fmin)
+        field_limit([Fx[:, n, :], Fz[:, n, :]], lb)
         fnorm = np.hypot(Fx[:, n, :], Fz[:, n, :])
         return Fx[:, n, :], Fz[:, n, :], Fz[:, n, :] / fnorm
     elif ffunc == 'H':
-        field_limit([Fx[:, :, n], Fy[:, :, n]], fmin)
+        field_limit([Fx[:, :, n], Fy[:, :, n]], lb)
         fnorm = np.hypot(Fx[:, :, n], Fy[:, :, n])
         return Fx[:, :, n], Fy[:, :, n], (Fx[:, :, n] / fnorm) * phi_unit(xy, N)
 
@@ -70,16 +70,16 @@ def dynamic(xy, t, fobs, ffunc, fmin=1.):
 def arrow_field3d(xyz, F, ffunc, view, fobs=(None,)):
     """
     Plot arrows of 3d-field.
-    :param xyz: list of spatial coords [x1, x2, y1, y2]
-    :param F: field (Fx, Fy, Fz)
+    :param xyz: spatial coords [x1,x2,y1,y2]
+    :param F: field (Fx,Fy,Fz)
     :param ffunc: field function
-    :param view: view plane {''(none default), 'xy', 'xz', 'yz'}
-    :param fobs: list of field objects
+    :param view: view plane {''(none),'xy','xz','yz'}
+    :param fobs: field objects
     """
     Fx, Fy, Fz = F
-    x, y, z = mesh(xyz, N_3D)
+    x, y, z = mesh(xyz, N3D)
     ax = plt.axes(projection='3d')  # orthogonal projection: proj_type='ortho'
-    n = round(N_3D / 2)
+    n = round(N3D / 2)
     ax.set_zlim3d(np.min(z), np.max(z))
     ax.set_zlabel(r'$z$')
     p = np.zeros_like(z)
@@ -98,7 +98,7 @@ def arrow_field3d(xyz, F, ffunc, view, fobs=(None,)):
                 p = np.ones_like(z)
     ax.quiver(x, y, z, Fx * p, Fy * p, Fz * p, color='black',
               arrow_length_ratio=0.5, pivot='middle',
-              length=max(xyz) / N_3D, normalize=True,
+              length=max(xyz) / N3D, normalize=True,
               alpha=0.5)
     draw_fobs(ffunc, fobs, plot3d=True)
 
@@ -106,10 +106,10 @@ def arrow_field3d(xyz, F, ffunc, view, fobs=(None,)):
 def pot_lines(xy, F, ffunc, fobs=(None,)):
     """
     Plot contour lines of heights.
-    :param xy: list of spatial coords [x1, x2, y1, y2]
+    :param xy: spatial coords [x1,x2,y1,y2]
     :param F: heights
     :param ffunc: field function
-    :param fobs: list of field objects
+    :param fobs: field objects
     """
     x, y, z = mesh(xy, N, rc='xy')
     n = round(N / 2)
@@ -122,8 +122,8 @@ def pot_lines(xy, F, ffunc, fobs=(None,)):
 def field_lines(xy, F, ffunc, fobs=(None,)):
     """
     Plot lines of field.
-    :param xy: list of spatial coords [x1, x2, y1, y2]
-    :param F: field (Fx, Fy)
+    :param xy: spatial coords [x1,x2,y1,y2]
+    :param F: field (Fx,Fy)
     :param ffunc: field function
     :param fobs: list of field objects
     """
@@ -140,8 +140,8 @@ def draw_fobs(ffunc, fobs, plot3d=False):
     """
     Draw current loop or discrete charge distribution.
     :param ffunc: field function
-    :param fobs: list of field objects
-    :param plot3d: plot 3d or 2d
+    :param fobs: field objects
+    :param plot3d: plot 3d if true
     """
     if not fobs[0] is None:
         if ffunc == 'E' or ffunc == 'phi':
@@ -153,8 +153,8 @@ def draw_fobs(ffunc, fobs, plot3d=False):
 def draw_loop(plot3d, fobs):
     """
     Draw current loop.
-    :param plot3d: plot 3d or 2d
-    :param fobs: list of field objects
+    :param plot3d: plot 3d if true
+    :param fobs: field objects
     """
     r = fobs[0].r0
     if plot3d:
@@ -183,8 +183,8 @@ def draw_loop(plot3d, fobs):
 def draw_charges(plot3d, fobs):
     """
     Draw discrete charge distribution.
-    :param plot3d: plot 3d or 2d
-    :param fobs: list of field objects
+    :param plot3d: plot 3d if true
+    :param fobs: field objects
     """
     if plot3d:
         R = 0.5

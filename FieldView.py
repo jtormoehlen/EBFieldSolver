@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from lib.FieldCalculator import field, rot, grad, mesh
-from lib.FieldPlot import N, N_3D
+from lib.FieldPlot import N, N3D
 from lib.FieldObject import Charge, Current
 
 plt.style.use('./lib/figstyle.mpstyle')
@@ -134,8 +134,8 @@ def main():
     B_y, B_x, B_z = -rot(A_y, A_x, A_z)
     # phi, phi_y, phi_z = field(xyz, N, charges, ffunc='phi', rc='xy')
     # E_y, E_x, E_z = -grad(phi)
-    f_1, f_2, f_3 = field(xyz, N_3D, charges, ffunc='E')
-    x_1, x_2, x_3 = mesh(xyz, N_3D)
+    f_1, f_2, f_3 = field(xyz, N3D, charges, ffunc='E')
+    x_1, x_2, x_3 = mesh(xyz, N3D)
 
     fig = plt.figure()
 
@@ -174,9 +174,9 @@ def main():
     ax2.view_init(22.5, -45)
     # draw_charges(True, charges, ax2)
     draw_loop(True, currents, ax2)
-    ax2.quiver(x_1, x_2, x_3, f_1*p0, f_2*p0, f_3*p0, colors='black',
+    ax2.quiver(x_1, x_2, x_3, f_1 * p0, f_2 * p0, f_3 * p0, colors='black',
                arrow_length_ratio=0.5, pivot='middle',
-               length=max(xyz) / N_3D, normalize=True,
+               length=max(xyz) / N3D, normalize=True,
                alpha=0.5)
     ax2.set_xlim3d(np.min(x_1), np.max(x_1))
     ax2.set_ylim3d(np.min(x_2), np.max(x_2))

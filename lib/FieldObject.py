@@ -1,10 +1,9 @@
 import numpy as np
 
-# constants
-epsilon_0 = 1.
-mu_0 = 1.
-c = 299792458.
-Z_0 = np.sqrt(mu_0 / epsilon_0)
+epsilon_0 = 1.  # elec field const
+mu_0 = 1.  # mag field const
+c = 299792458.  # speed of light
+Z_0 = np.sqrt(mu_0 / epsilon_0)  # wave resistance of free space
 
 
 class Charge:
@@ -33,8 +32,10 @@ class Current:
         """
         Current loop.
         :param I: Amperage
-        :param r0: position (x, y, z)
-        :param dr: current element
+        :param r0: list of positions [(x_1,y_1,z_1),...,
+                                      (x_n-1,y_n-1,z_n-1)]
+        :param dr: list of current elements [(drx_1,dry_1,drz_1),...,
+                                             (drx_n-1,dry_n-1,drz_n-1)]
         """
         self.I = I
         self.r0 = r0
