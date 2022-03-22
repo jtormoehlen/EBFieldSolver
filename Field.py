@@ -33,7 +33,7 @@ def main():
     """example: linear antenna"""
     f = 1.0E9  # frequency f=1GHz
     P = 1.0  # radiation power P=1W
-    n_lambda = 0.5  # multiplier so that antenna length d=n_lambda*lambda_0
+    k = 0.5  # multiplier so that antenna length d=n_lambda*lambda_0
     antennaList = [Antenna(f, P)]
     l0 = antennaList[0].lambda0  # wavelength
     T = antennaList[0].T  # period
