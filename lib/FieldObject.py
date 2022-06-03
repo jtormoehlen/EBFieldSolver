@@ -1,15 +1,12 @@
 import numpy as np
 
-epsilon_0 = 1.  # elec field const
-mu_0 = 1.  # mag field const
-c = 299792458.  # speed of light
-Z_0 = np.sqrt(mu_0 / epsilon_0)  # wave resistance of free space
+c = 2.998E10  # speed of light in cm/s
 
 
 class Charge:
     def __init__(self, q, x, y, z=0):
         """
-        Point charge.
+        Point charge in gaussian cgs-units.
         :param q: charge
         :param x: position x
         :param y: position y
@@ -24,14 +21,14 @@ class Charge:
 
     def phi(self, x, y, z, t=0):
         r = np.array([x, y, z])
-        return self.q / np.linalg.norm(r - self.r0) * np.array([1, 0, 0])
+        return self.q / np.linalg.norm(r - self.r0) * np.array([1., 0., 0.])
 
 
 class Current:
     def __init__(self, I, r0, dr):
         """
-        Current loop.
-        :param I: Amperage
+        Current loop in gaussian cgs-units.
+        :param I: current
         :param r0: list of positions [(x_1,y_1,z_1),...,
                                       (x_n-1,y_n-1,z_n-1)]
         :param dr: list of current elements [(drx_1,dry_1,drz_1),...,
@@ -46,68 +43,56 @@ class Current:
         B = 0
         for i in range(len(self.r0)):
             dl_cross_r_r0 = np.cross(self.dr[i], r - self.r0[i])
-            B += self.I * dl_cross_r_r0 / np.linalg.norm(r - self.r0[i]) ** 3
+            B += (1 / c) * self.I * dl_cross_r_r0 / np.linalg.norm(r - self.r0[i]) ** 3
         return B
 
     def A(self, x, y, z, t=0):
         r = np.array([x, y, z])
         A = 0
         for i in range(len(self.r0)):
-            A += self.I * self.dr[i] / np.linalg.norm(r - self.r0[i])
+            A += (1 / c) * self.I * self.dr[i] / np.linalg.norm(r - self.r0[i])
         return A
 
 
 class Antenna:
-    def __init__(self, nu, P, k=0, x=0, y=0, z=0, dphi=0.):
+    def __init__(self, f, P, d_fac=0, x=0, y=0, z=0):
         """
-        Antenna.
-        :param nu: radiation frequency f
-        :param P: average radiation power P
-        :param k: antenna length factor: short or linear dipole
+        Antenna in gaussian cgs-units.
+        :param f: frequency
+        :param P: average radiation power
+        :param d_fac: antenna length factor d=l_fac*l
         :param x: position x
         :param y: position y
         :param z: position z
         """
         self.r0 = np.array([x, y, z])
-        self.P = P
-        self.T = 1 / nu
-        self.omega = 2 * np.pi * nu
-        self.lambda0 = c / nu
-        self.k_0 = (2 * np.pi) / self.lambda0
-        self.rod = k
-        self.L = k * self.lambda0
-        self.h = self.L / 2
-        self.dphi = np.deg2rad(dphi)
-
-    def p(self):
-        e_z = np.array([0, 0, 1])
-        I_0 = np.sqrt((48 * np.pi * self.P / Z_0)) / self.k_0
-        return (1j * I_0) / (2. * self.omega) * e_z
-
-    def I(self):
-        return 0
+        self.P = P * 1.0E7
+        self.omega = 2 * np.pi * f
+        self.l = c / f
+        self.k = (2 * np.pi) / self.l
+        self.d_fac = d_fac
+        self.d = d_fac * self.l
 
     def E(self, x, y, z, t=0):
-        return self.A(x, y, z, t) * (1j * Z_0) / (mu_0 * self.k_0)
+        return self.A(x, y, z, t) * (1j / self.k)
 
-    def H(self, x, y, z, t=0):
-        return self.A(x, y, z, t) * (1 / mu_0)
+    def B(self, x, y, z, t=0):
+        return self.A(x, y, z, t)
 
     def A(self, x, y, z, t=0):
         r = np.sqrt((x - self.r0[0]) ** 2 + (y - self.r0[1]) ** 2 + (z - self.r0[2]) ** 2)
-        if self.L == 0:
-            p = self.p()
-            const = -(1j * mu_0 * self.omega) / (4 * np.pi)
-            return const * p * ((np.exp(1j * (self.k_0 * r - self.omega * t - self.dphi))) / r)
-        else:
+        f_rt = np.exp(1j * (self.k * r - self.omega * t))
+        I = np.sqrt(c * self.P)
+        if self.d == 0:  # short dipole
+            I *= np.sqrt(3.0)
+            p = 1j * (c * I) / self.omega ** 2 * np.array([0, 0, 1])
+            return -1j * self.k * p * (f_rt / r)
+        else:  # linear antenna
             theta = np.arccos(z / r)
-            f_theta_phi = (np.cos(self.k_0 * self.h * np.cos(theta)) - np.cos(self.k_0 * self.h)) / np.sin(theta) ** 2
-            exp_t = np.exp(1j * (self.k_0 * r - self.omega * t - self.dphi))
-
-            rod_int = self.rod.is_integer()
-            if not rod_int:
-                I_0 = np.sqrt((4 * np.pi * self.P) / (Z_0 * 1.21883))
+            f_theta = (np.cos(self.k * self.d / 2 * np.cos(theta)) -
+                       np.cos(self.k * self.d / 2)) / np.sin(theta) ** 2
+            if not self.d_fac.is_integer():
+                I *= np.sqrt(1 / 1.2188)
             else:
-                I_0 = np.sqrt((4 * np.pi * self.P) / (Z_0 * 3.31813))
-            A_z = ((mu_0 * I_0 * exp_t) / (2 * np.pi * self.k_0 * r)) * f_theta_phi
-            return np.array([0, 0, A_z])
+                I *= np.sqrt(1 / 3.3181)
+            return (2 * I / self.omega) * (f_rt / r) * f_theta * np.array([0, 0, 1])

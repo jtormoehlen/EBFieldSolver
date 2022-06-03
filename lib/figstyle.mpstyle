@@ -2,18 +2,20 @@ font.family: 					lmodern
 font.size: 						11
 text.usetex: 					True
 text.latex.preamble: 			\usepackage{lmodern} \usepackage{amsmath} \usepackage{physics}
-figure.figsize: 			    5.9, 5.9
-figure.constrained_layout.use: 	True
-figure.constrained_layout.wspace: 0.2
-figure.constrained_layout.hspace: 0.2
+figure.figsize: 			    2.95, 2.95
+# figure.figsize: 			    5.9, 5.9
+figure.constrained_layout.use: 	False
+# figure.constrained_layout.wspace: 0.2
+# figure.constrained_layout.hspace: 0.2
 figure.autolayout: 				False
 savefig.format: 				pdf
 axes.titlesize:                 11
+axes.titlepad:                  25
 axes.grid:                      False
 axes3d.grid:                    True
 xtick.top: 					    True
 xtick.direction: 				in
-xtick.minor.visible: 			True
+xtick.minor.visible: 			False
 ytick.right: 					True
 ytick.direction: 				in
-ytick.minor.visible: 			True
+ytick.minor.visible: 			False

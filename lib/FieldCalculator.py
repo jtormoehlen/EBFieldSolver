@@ -18,8 +18,8 @@ def field(xyz, n, fobs, t=0, ffunc='', rc='ij'):
         for i in range(len(x)):
             for j in range(len(y)):
                 for k in range(len(z)):
-                    func = getattr(fob, ffunc)
-                    F = np.real(func(x[i][j][k], y[i][j][k], z[i][j][k], t))
+                    ff = getattr(fob, ffunc)
+                    F = np.real(ff(x[i][j][k], y[i][j][k], z[i][j][k], t))
                     Fx[i][j][k] += F[0]
                     Fy[i][j][k] += F[1]
                     Fz[i][j][k] += F[2]
@@ -49,13 +49,13 @@ def field_limit(f, lb):
     :return: limited field
     """
     Fx, Fy = f
-    fmul = 50.
+    ub = lb * 2.0  # set upper bound to 2*lb
     for i in range(len(Fx)):
         for j in range(len(Fy)):
             fnorm = np.sqrt(Fx[i][j] ** 2 + Fy[i][j] ** 2)
-            if fnorm > lb * fmul:
-                Fx[i][j] = (Fx[i][j] / fnorm) * lb * fmul
-                Fy[i][j] = (Fy[i][j] / fnorm) * lb * fmul
+            if fnorm > ub != 0.0:
+                Fx[i][j] = (Fx[i][j] / fnorm) * ub
+                Fy[i][j] = (Fy[i][j] / fnorm) * ub
     return Fx, Fy
 
 
@@ -75,9 +75,9 @@ def phi_unit(xyz, n):
 
 def grad(F):
     """
-    Gradient field.
+    Gradient of scalar field.
     :param F: scalar field
-    :return: gradient field
+    :return: gradient
     """
     fx, fy, fz = np.gradient(F)
     return np.array([fx, fy, fz])
@@ -85,11 +85,11 @@ def grad(F):
 
 def rot(Fx, Fy, Fz):
     """
-    Vortex field.
+    Curl of vector field.
     :param Fx: x-comp of field
     :param Fy: y-comp of field
     :param Fy: z-comp of field
-    :return: vortex field
+    :return: curl
     """
     fxx, fxy, fxz = np.gradient(Fx)
     fyx, fyy, fyz = np.gradient(Fy)

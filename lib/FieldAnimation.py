@@ -1,29 +1,31 @@
 import sys
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation, PillowWriter
-from lib.FieldPlot import static, static3d, dynamic, N
-from lib.FieldCalculator import mesh
+from lib.FieldPlot import static, static3d, dynamic, N, draw_antennas
+from mpl_toolkits import mplot3d
 
 plt.style.use('./lib/figstyle.mpstyle')
 FRAMES = 30  # total frames
 FPS = 60  # frames per second
 
 
-def init(xy, labs=['$x$', '$y$'], bcg='white', show=True):
+def init_window(xy, labs=['$x$', '$y$'], bgc='white', show=True):
     """
     Set axe limits, labels, background etc.
     :param xy: list<float> of spatial limits [x1,x2,y1,y2]
     :param labs: list<string> of axe labels [x_label,y_label]
-    :param bcg: string of background color
+    :param bgc: string of background color
     :param show: run figure if true
     """
-    plt.xlim(xy[0], xy[1])
-    plt.ylim(xy[2], xy[3])
-    plt.xlabel(labs[0])
-    plt.ylabel(labs[1])
-    plt.gca().set_facecolor(bcg)
-    plt.show() if show else 0
+    plt.gca().set_xlim(xy[0], xy[1])
+    plt.gca().set_ylim(xy[2], xy[3])
+    plt.gca().set_xlabel(labs[0])
+    plt.gca().set_ylabel(labs[1])
+    plt.gca().set_facecolor(bgc)
+    plt.gca().set_title('(b)')
+    if show:
+        plt.show()
 
 
 def static_field(xy, fobs, ffunc, nabla=''):
@@ -34,10 +36,11 @@ def static_field(xy, fobs, ffunc, nabla=''):
     :param ffunc: string of field function in {'phi','E','A','B'}
     :param nabla: string of nabla operator in {''(none),'rot','grad'}
     """
+    plt.subplot()
     xy.append(min(xy))
     xy.append(max(xy))
     static(xy, fobs, ffunc, nabla)
-    init(xy)
+    init_window(xy)
 
 
 def static_field3d(xyz, fobs, ffunc, nabla='', view=''):
@@ -49,8 +52,9 @@ def static_field3d(xyz, fobs, ffunc, nabla='', view=''):
     :param nabla: string of nabla operator {''(none),'rot','grad'}
     :param view: string of view plane {''(none),'xy','xz','yz'}
     """
+    plt.gca().subplot(projection='3d')
     static3d(xyz, fobs, ffunc, nabla, view)
-    init(xyz)
+    init_window(xyz)
 
 
 def dynamic_field(xy, tmax, fobs, ffunc, save=False):
@@ -63,33 +67,30 @@ def dynamic_field(xy, tmax, fobs, ffunc, save=False):
     :param save: save animation if true
     """
     fig = plt.figure()
-    ax = plt.subplot()
+    plt.subplot()
     xy.extend([min(xy), max(xy)])
-    x, y, z = mesh(xy, N)
-    n = round(N / 2)
     if ffunc == 'E':
-        init(xy, ['$x$', '$z$'], show=False, bcg='black')
-        x = x[:, n, :]
-        y = z[:, n, :]
-    if ffunc == 'H':
-        init(xy, ['$x$', '$y$'], show=False, bcg='black')
-        x = x[:, :, n]
-        y = y[:, :, n]
-    f_x, f_y, f_c = dynamic(xy, 0, fobs, ffunc, 1.)
-    fmin = np.min(np.sqrt(f_x ** 2 + f_y ** 2))
-    Q = ax.quiver(x, y, f_x, f_y, f_c, cmap='cool', pivot='mid')
+        labels = ['$x/$cm', '$z/$cm']
+    else:
+        labels = ['$x/$cm', '$y/$cm']
+    Q, fmean = dynamic(xy, -1.0, fobs, ffunc)
+    init_window(xy, labels, show=False, bgc='white')
+
+    def init():
+        draw_antennas(ffunc, fobs)
+        return Q,
 
     def update(i):
         dt = tmax * (1.0 / FRAMES) * i
-        f_x, f_z, f_c = dynamic(xy, dt, fobs, ffunc, fmin)
+        f_x, f_z, f_c = dynamic(xy, dt, fobs, ffunc, fmean)
         Q.set_UVC(f_x, f_z, f_c)
         return Q,
 
-    anim = FuncAnimation(fig, update, frames=FRAMES, interval=100, blit=True)
+    anim = FuncAnimation(fig, update, init_func=init, frames=FRAMES, interval=100, blit=True)
 
     if save:
         print('Saving ' + ffunc + ' animation...')
-        path = './' + ffunc + f'_{round(fobs[0].L / fobs[0].lambda0, 3)}.gif'
+        path = './' + ffunc + f'_{round(fobs[0].d / fobs[0].l, 3)}.gif'
         anim.save(path, writer=PillowWriter(fps=FPS),
                   progress_callback=lambda i, j: print(f'Saving frame {i + 1} of {j}'))
         sys.exit(0)

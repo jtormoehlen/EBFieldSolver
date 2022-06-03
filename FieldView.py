@@ -134,7 +134,7 @@ def main():
     B_y, B_x, B_z = -rot(A_y, A_x, A_z)
     # phi, phi_y, phi_z = field(xyz, N, charges, ffunc='phi', rc='xy')
     # E_y, E_x, E_z = -grad(phi)
-    f_1, f_2, f_3 = field(xyz, N3D, charges, ffunc='E')
+    f_1, f_2, f_3 = field(xyz, N3D, currents, ffunc='B')
     x_1, x_2, x_3 = mesh(xyz, N3D)
 
     fig = plt.figure()
