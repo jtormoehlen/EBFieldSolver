@@ -1,99 +1,89 @@
-import sys
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.animation import FuncAnimation, PillowWriter
-from lib.FieldPlot import static, static3d, dynamic, N, draw_antennas
+from matplotlib.animation import FuncAnimation, PillowWriter, FFMpegWriter
 from mpl_toolkits import mplot3d
+import os
 
-plt.style.use('./lib/figstyle.mpstyle')
-FRAMES = 30  # total frames
-FPS = 60  # frames per second
+from lib.FieldPlot import static, static3d, dynamic, N, draw_antennas
 
+figstylefile=os.path.dirname(__file__)+"/figstyle.mpstyle"
+plt.style.use(figstylefile)
+# total frames
+FRAMES = 30  
+# frames per second
+FPS = 10  
 
-def init_window(xy, labs=['$x$', '$y$'], bgc='white', show=True):
-    """
-    Set axe limits, labels, background etc.
-    :param xy: list<float> of spatial limits [x1,x2,y1,y2]
-    :param labs: list<string> of axe labels [x_label,y_label]
-    :param bgc: string of background color
-    :param show: run figure if true
-    """
+def window(xy, labs=['$x$', '$y$'], show=True):
+    # Set axe limits, labels etc.
+    # xy: spatial coords [x1,x2,y1,y2]
+    # labs: list<string> of axe labels [x_label,y_label]
+    # show: run figure if true
     plt.gca().set_xlim(xy[0], xy[1])
     plt.gca().set_ylim(xy[2], xy[3])
     plt.gca().set_xlabel(labs[0])
     plt.gca().set_ylabel(labs[1])
-    plt.gca().set_facecolor(bgc)
-    plt.gca().set_title('(b)')
     if show:
         plt.show()
 
-
 def static_field(xy, fobs, ffunc, nabla=''):
-    """
-    Routine for static field.
-    :param xy: list of spatial coords [x1,x2,y1,y2]
-    :param fobs: list of field objects
-    :param ffunc: string of field function in {'phi','E','A','B'}
-    :param nabla: string of nabla operator in {''(none),'rot','grad'}
-    """
+    # Routine for static field. See FieldPlot.static() for description.
     plt.subplot()
-    xy.append(min(xy))
-    xy.append(max(xy))
+    # extend z-comp
+    xy.extend([min(xy),max(xy)])  
     static(xy, fobs, ffunc, nabla)
-    init_window(xy)
-
+    window(xy)
 
 def static_field3d(xyz, fobs, ffunc, nabla='', view=''):
-    """
-    Routine for 3d-static field.
-    :param xyz: list of spatial coords [x1,x2,y1,y2,z1,z2]
-    :param fobs: list of field objects
-    :param ffunc: string of field function
-    :param nabla: string of nabla operator {''(none),'rot','grad'}
-    :param view: string of view plane {''(none),'xy','xz','yz'}
-    """
-    plt.gca().subplot(projection='3d')
+    # Routine for 3d-static field. See FieldPlot.static3d() for description.
+    plt.subplot(projection='3d', computed_zorder=False)
     static3d(xyz, fobs, ffunc, nabla, view)
-    init_window(xyz)
+    window(xyz)
 
-
-def dynamic_field(xy, tmax, fobs, ffunc, save=False):
-    """
-    Routine for dynamic field.
-    :param xy: list of spatial coords [x1,x2,y1,y2]
-    :param tmax: upper bound of time such 0 <= t <= tmax
-    :param fobs: list of field objects
-    :param ffunc: field function
-    :param save: save animation if true
-    """
+def dynamic_field(w, t, fobs, ffunc, save=False):
+    # Routine for dynamic field. See FieldPlot.dynamic() for description.
     fig = plt.figure()
     plt.subplot()
-    xy.extend([min(xy), max(xy)])
+    # extend z-comp
+    w.extend([min(w),max(w)])  
     if ffunc == 'E':
-        labels = ['$x/$cm', '$z/$cm']
+        labels = ['$x$','$z$']
     else:
-        labels = ['$x/$cm', '$y/$cm']
-    Q, fmean = dynamic(xy, -1.0, fobs, ffunc)
-    init_window(xy, labels, show=False, bgc='white')
+        labels = ['$x$','$y$']
+    # init arrows with avg length
+    Q, fmean = dynamic(w, -1, fobs, ffunc)  
+    window(w, labels, show=False)
 
     def init():
         draw_antennas(ffunc, fobs)
         return Q,
 
     def update(i):
-        dt = tmax * (1.0 / FRAMES) * i
-        f_x, f_z, f_c = dynamic(xy, dt, fobs, ffunc, fmean)
-        Q.set_UVC(f_x, f_z, f_c)
+        # current time
+        dt = t[0] + t[1]*(i/FRAMES)  
+        f_x, f_z, f_c = dynamic(w, dt, fobs, ffunc, fmean)
+        # update vectors and colors
+        Q.set_UVC(f_x, f_z, f_c)  
         return Q,
 
-    anim = FuncAnimation(fig, update, init_func=init, frames=FRAMES, interval=100, blit=True)
+    # anim: animator object
+    # fig: figure object
+    # update: repeat function
+    # init: intial function
+    # frames: total frames
+    # blit: smoothen animation
+    anim = FuncAnimation(fig, update, init_func=init,
+                         frames=FRAMES, blit=True)
 
-    if save:
+    # save animation
+    if save:  
         print('Saving ' + ffunc + ' animation...')
-        path = './' + ffunc + f'_{round(fobs[0].d / fobs[0].l, 3)}.gif'
-        anim.save(path, writer=PillowWriter(fps=FPS),
-                  progress_callback=lambda i, j: print(f'Saving frame {i + 1} of {j}'))
-        sys.exit(0)
-    else:
+        path = './img/' + ffunc + f'_{round(fobs[0].d/fobs[0].wl, 3)}.gif'
+        # writer = FFMpegWriter(fps=FPS) 
+        writer = PillowWriter(fps=FPS)  
+        anim.save(path, writer=writer,
+                  progress_callback=lambda i, j:
+                  print(f'Saving frame {i + 1} of {j}'))
+    # render animation
+    else:  
         print('Rendering animation...')
         plt.show()
